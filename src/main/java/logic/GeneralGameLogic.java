@@ -6,6 +6,7 @@ import drawEngine.DrawEngine;
 import figures.MainFigure;
 import figures.ZombieCollection;
 import figures.ZombieFigure;
+import setups.IQ;
 import setups.KeyboardSetup;
 import setups.TilesSetup;
 
@@ -71,12 +72,14 @@ public class GeneralGameLogic {
     private static void performZombieFreezing() {
         Random random = new Random();
         for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
-            zombieFigure.decrementFreezeCounter();
-            if ((zombieFigure.getPosition().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0) &&
-                    (zombieFigure.getPosition().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE ==0) &&
-                    (!zombieFigure.isInFreeze())) {
-                if (random.nextInt(2000)==1000) {
-                    zombieFigure.setFreezeCounter(200);
+            if (zombieFigure.getIq() == IQ.stupid) {
+                zombieFigure.decrementFreezeCounter();
+                if ((zombieFigure.getPosition().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0) &&
+                        (zombieFigure.getPosition().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0) &&
+                        (!zombieFigure.isInFreeze())) {
+                    if (random.nextInt(2000) == 1000) {
+                        zombieFigure.setFreezeCounter(200);
+                    }
                 }
             }
         }
@@ -213,19 +216,30 @@ public class GeneralGameLogic {
     private static void performZombiesWalking() {
         for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
             zombieFigure.lineUpToTiles();
-            Position positionInPixels = zombieFigure.getPosition();
-            if (!zombieFigure.isInFreeze()) {
-                if ((positionInPixels.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE != 0) ||
-                        (positionInPixels.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE != 0) ||
-                        canWalkThatDirection(positionInPixels, zombieFigure.getSpriteDirection())) {
-                    if (Math.random() > 0.001) {
-                        zombieFigure.walk();
-                    } else {
-                        zombieFigure.setNextDirection(positionInPixels);
-                    }
+
+
+            switch (zombieFigure.getIq()) {
+                case stupid -> performZombieWalkForStupid(zombieFigure);
+                // todo implement rest of IQ
+            }
+
+
+        }
+    }
+
+    private static void performZombieWalkForStupid(ZombieFigure zombieFigure){
+        Position positionInPixels = zombieFigure.getPosition();
+        if (!zombieFigure.isInFreeze()) {
+            if ((positionInPixels.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE != 0) ||
+                    (positionInPixels.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE != 0) ||
+                    canWalkThatDirection(positionInPixels, zombieFigure.getSpriteDirection())) {
+                if (Math.random() > 0.001) {
+                    zombieFigure.walk();
                 } else {
                     zombieFigure.setNextDirection(positionInPixels);
                 }
+            } else {
+                zombieFigure.setNextDirection(positionInPixels);
             }
         }
     }

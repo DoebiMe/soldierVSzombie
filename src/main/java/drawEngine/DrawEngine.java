@@ -30,25 +30,42 @@ public class DrawEngine {
 
     }
 
-    public static int getXSubtractor(MainFigure mainFigure) {
-        int x = mainFigure.getPosition().getxPos();
-        if (x < 200) {
-            x -=200;
+    public static int getSubX(MainFigure mainFigure) {
+        int subX = 0;
+        int togglePoint = GraphicSetup.getWidth();
+        if (mainFigure.getPosition().getxPos() < /*togglePoint */700) {
+            subX = mainFigure.getPosition().getxPos() - /*togglePoint*/ 700;
+            return subX;
         }
-        return x;
+        return subX;
+    }
+
+    public static int getSubY(MainFigure mainFigure) {
+        int subY = 0;
+
+        if (mainFigure.getPosition().getyPos() < 400) {
+            subY = mainFigure.getPosition().getyPos() - 400;
+        }
+        return subY;
     }
 
 
     public static void drawMainFigure(MainFigure mainFigure) {
+        int subX = getSubX(mainFigure);
+        int subY = getSubY(mainFigure);
+
         GraphicSetup.getGraphicsContext().drawImage(
                 mainFigure.getImageForCurrentStepAndDirection(),//
-                GraphicSetup.getHalfWidth(),
-                GraphicSetup.getHalfHeight(),
+                GraphicSetup.getHalfWidth() + subX,
+                GraphicSetup.getHalfHeight() + subY,
                 SCALE_FACTOR_SPRITE,
                 SCALE_FACTOR_SPRITE);
     }
 
     public static void drawAllTiles(TilesSetup tilesSetup, MainFigure mainFigure, boolean completeRedraw) {
+        int subX = getSubX(mainFigure);
+        int subY = getSubY(mainFigure);
+
         GraphicSetup.getGraphicsContext().setFill(Color.GREY);
         if (completeRedraw) {
             GraphicSetup.getGraphicsContext().fillRect(0, 0, GraphicSetup.getWidth(), GraphicSetup.getHeight());
@@ -56,25 +73,25 @@ public class DrawEngine {
             GraphicSetup.getGraphicsContext().fillRect(0, 0, GraphicSetup.getWidth(), GraphicSetup.getHeight());
         }
         for (int row = 0; row < TilesSetup.TILE_MAP_ROWS; row++) {
+            int startY = (GraphicSetup.getHalfHeight() + (row * SCALE_FACTOR_SPRITE) - mainFigure.getPosition().getyPos());
+            startY += subY;
+            if ((startY < -SCALE_FACTOR_SPRITE) || //
+                    (startY > GraphicSetup.getHeight())) {
+                continue;
+            }
             for (int col = 0; col < TilesSetup.TILE_MAP_COLS; col++) {
                 int id = tilesSetup.tileMapId[col][row];
                 if (id != 0) {
                     id--;
                     int startX = (GraphicSetup.getHalfWidth() + (col * SCALE_FACTOR_SPRITE) - mainFigure.getPosition().getxPos());
-                    int startY = (GraphicSetup.getHalfHeight() + (row * SCALE_FACTOR_SPRITE) - mainFigure.getPosition().getyPos());
-
+                    startX += subX;
                     if ((startX < -SCALE_FACTOR_SPRITE) || //
-                            (startY < -SCALE_FACTOR_SPRITE) || //
-                            (startX > GraphicSetup.getWidth()) || //
-                            (startY > GraphicSetup.getHeight())) {
+                            (startX > GraphicSetup.getWidth())) {
                         continue;
                     }
 
                     GraphicSetup.getGraphicsContext().drawImage(tilesSetup.slicedTiles[id],
-                            startX,
-                            startY,
-                            SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE
-
+                            startX, startY, SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE
                     );
                 }
             }
@@ -82,10 +99,12 @@ public class DrawEngine {
     }
 
     public static void drawAllZombies(MainFigure mainFigure, ZombieCollection zombieCollection) {
+        int subX = getSubX(mainFigure);
+        int subY = getSubY(mainFigure);
         for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
             Position position = zombieFigure.getPosition();
-            int x = GraphicSetup.getHalfWidth() + position.getxPos() - mainFigure.getPosition().getxPos();
-            int y = GraphicSetup.getHalfHeight() + position.getyPos() - mainFigure.getPosition().getyPos();
+            int x = GraphicSetup.getHalfWidth() + position.getxPos() - mainFigure.getPosition().getxPos() + subX;
+            int y = GraphicSetup.getHalfHeight() + position.getyPos() - mainFigure.getPosition().getyPos() + subY;
 
             GraphicSetup.getGraphicsContext().drawImage(zombieFigure.getNextImageForDirection(),
                     x, y,

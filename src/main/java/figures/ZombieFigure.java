@@ -11,6 +11,7 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import logic.GeneralGameLogic;
+import setups.IQ;
 
 import java.util.Random;
 
@@ -28,6 +29,7 @@ public class ZombieFigure {
     private Position position;
     private long timeDividerForNextImage;
     private int freezeCounter;
+    private IQ iq;
 
 
     public ZombieFigure() {
@@ -36,27 +38,35 @@ public class ZombieFigure {
         currentStep = 0;
         acceleration = new Acceleration(50, 50);
         timeDividerForNextImage = 0;
-        freezeCounter=0;
+        freezeCounter = 0;
+        iq = IQ.stupid;
     }
 
     public boolean isInFreeze() {
-        return freezeCounter!=0;
+        return freezeCounter != 0;
     }
 
     public void setFreezeCounter(int freezeCounter) {
-        if (freezeCounter<0) {
+        if (freezeCounter < 0) {
             freezeCounter = 0;
         }
         this.freezeCounter = freezeCounter;
     }
 
-    public void decrementFreezeCounter(){
+    public void decrementFreezeCounter() {
         if (freezeCounter > 0) {
             freezeCounter--;
         }
 
     }
 
+    public IQ getIq() {
+        return iq;
+    }
+
+    public void setIq(IQ iq) {
+        this.iq = iq;
+    }
 
     public Position getPosition() {
         return position;
@@ -143,6 +153,7 @@ public class ZombieFigure {
                 case LEFT -> newDirection = SpriteDirection.DOWN;
             }
         }
+
         spriteDirection = newDirection;
     }
 
@@ -176,7 +187,7 @@ public class ZombieFigure {
             case UP -> y--;
             case DOWN -> y++;
         }
-        setPosition(new Position(x,y));
+        setPosition(new Position(x, y));
     }
 
     public void allignToTiles() {
@@ -184,7 +195,7 @@ public class ZombieFigure {
         int y = position.getyPos();
         x = x - (position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE);
         y = y - (position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE);
-        setPosition(new Position(x,y));
+        setPosition(new Position(x, y));
     }
 
     public SpriteDirection getDirection() {
