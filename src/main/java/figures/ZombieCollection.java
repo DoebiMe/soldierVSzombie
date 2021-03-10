@@ -4,6 +4,7 @@ import combinatedFields.Position;
 import combinatedFields.SpriteDirection;
 import drawEngine.DrawEngine;
 import logic.GeneralGameLogic;
+import setups.IQ;
 import setups.TilesSetup;
 
 import java.util.ArrayList;
@@ -23,12 +24,21 @@ public class ZombieCollection {
         zombieFigureList = new ArrayList<>();
 
 
-        for (int count = 0; count < 100;count++) {
+        for (int count = 0; count < 30;count++) {
             ZombieFigure zombieFigure = new ZombieFigure();
             zombieFigure.setPosition(getRandomFreePosition());
             zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
-            Position scaledPosition = zombieFigure.getPositionScaledToTiles();
-            zombieFigure.setNextDirection(scaledPosition);
+            zombieFigure.setNextDirection();
+            zombieFigure.setIq(IQ.stupid);
+            zombieFigureList.add(zombieFigure);
+        }
+
+        for (int count = 0; count < 10;count++) {
+            ZombieFigure zombieFigure = new ZombieFigure();
+            zombieFigure.setPosition(getRandomFreePosition());
+            zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
+            zombieFigure.setNextDirection();
+            zombieFigure.setIq(IQ.normal);
             zombieFigureList.add(zombieFigure);
         }
 
@@ -46,11 +56,6 @@ public class ZombieCollection {
         return DrawEngine.getTilesTranslatedToPixels(new Position(col,row));
     }
 
-
-
-
-
-
     public  List<Position> getAllZombiePositions() {
         List<Position> positionArrayList = new ArrayList<>();
         for (ZombieFigure zombieFigure : zombieFigureList) {
@@ -58,11 +63,6 @@ public class ZombieCollection {
         }
         return positionArrayList;
     }
-
-
-
-
-
 
     public   boolean isCollision(Position positionScaledToTiles) {
         for (ZombieFigure zombieFigure : zombieFigureList) {

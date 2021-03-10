@@ -58,6 +58,21 @@ public class TilesSetup {
         return null;
     }
 
+    private int[] getColTileIdsFromRow(int row) {
+        int[] tileIds = new int[TILE_MAP_COLS];
+        for (int col=0;col<TILE_MAP_COLS;col++) {
+            tileIds[col] = tileMapId[col][row];
+        }
+        return tileIds;
+    }
+
+    private int[] getRowTileIdsFromCol(int col) {
+        int[] tileIds = new int[TILE_MAP_ROWS];
+        for (int row=0;row<TILE_MAP_COLS;row++) {
+            tileIds[col] = tileMapId[col][row];
+        }
+        return tileIds;
+    }
 
     private  void loadAndSliceTileSource(String tileSourceName) {
         int tileSourceCols = 18;

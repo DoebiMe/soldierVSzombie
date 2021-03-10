@@ -53,7 +53,7 @@ public class GeneralGameLogic {
             boolean transporterMovement = isStandingOnTransporter(mainFigure.getPosition());
             if (transporterMovement) {
                 Position newPositionInTiles = getNextTransporterPositionInTiles(
-                        DrawEngine.getPixelsTranslatedToTiles(mainFigure.getPosition()), mainFigure.getDirection());
+                        mainFigure.getPositionInTiles(), mainFigure.getDirection());
                 Position newPositionInPixels = DrawEngine.getTilesTranslatedToPixels(newPositionInTiles);
                 mainFigure.setPosition(newPositionInPixels);
                 mainFigure.allignToTiles();
@@ -62,8 +62,8 @@ public class GeneralGameLogic {
             performZombiesWalking();
             performZombiesWalkingOnTransporter();
             performZombieFreezing();
-            DrawEngine.drawAllTiles(tilesSetup, mainFigure,transporterMovement);
-            DrawEngine.drawAllZombies(mainFigure,zombieCollection);
+            DrawEngine.drawAllTiles(tilesSetup, mainFigure, transporterMovement);
+            DrawEngine.drawAllZombies(mainFigure, zombieCollection);
             DrawEngine.drawMainFigure(mainFigure);
         }
     }
@@ -89,7 +89,7 @@ public class GeneralGameLogic {
         for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
             if (isStandingOnTransporter(zombieFigure.getPosition())) {
                 Position newPositionInTiles = getNextTransporterPositionInTiles(
-                        DrawEngine.getPixelsTranslatedToTiles(zombieFigure.getPosition()), zombieFigure.getDirection());
+                        zombieFigure.getPositionInTiles(), zombieFigure.getDirection());
                 Position newPositionInPixels = DrawEngine.getTilesTranslatedToPixels(newPositionInTiles);
                 zombieFigure.setPosition(newPositionInPixels);
                 zombieFigure.allignToTiles();
@@ -216,18 +216,27 @@ public class GeneralGameLogic {
     private static void performZombiesWalking() {
         for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
             zombieFigure.lineUpToTiles();
-
-
             switch (zombieFigure.getIq()) {
                 case stupid -> performZombieWalkForStupid(zombieFigure);
+                case normal -> {
+                    if (!getPerformZombieWalkForNormalWorked(zombieFigure)) {
+                        performZombieWalkForStupid(zombieFigure);
+                    };
+                }
+                case smart -> {
+                    if (!getPerformZombieWalkForSmartWorked(zombieFigure)) {
+                        if (!getPerformZombieWalkForNormalWorked(zombieFigure)) {
+                            performZombieWalkForStupid(zombieFigure);
+                        };
+                    }
+                }
                 // todo implement rest of IQ
             }
-
 
         }
     }
 
-    private static void performZombieWalkForStupid(ZombieFigure zombieFigure){
+    private static void performZombieWalkForStupid(ZombieFigure zombieFigure) {
         Position positionInPixels = zombieFigure.getPosition();
         if (!zombieFigure.isInFreeze()) {
             if ((positionInPixels.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE != 0) ||
@@ -236,14 +245,75 @@ public class GeneralGameLogic {
                 if (Math.random() > 0.001) {
                     zombieFigure.walk();
                 } else {
-                    zombieFigure.setNextDirection(positionInPixels);
+                    zombieFigure.setNextDirection();
                 }
             } else {
-                zombieFigure.setNextDirection(positionInPixels);
+                zombieFigure.setNextDirection();
             }
         }
     }
 
+    private static boolean getPerformZombieWalkForNormalWorked(ZombieFigure zombieFigure) {
+        if ((zombieFigure.getPositionInPixels().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0) &&
+                (zombieFigure.getPositionInPixels().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0)) {
+            Position mainFigurePositionInTiles = mainFigure.getPositionInTiles();
+            Position zombieFigurePositionInTiles = zombieFigure.getPositionInTiles();
+            int mainFigCol = mainFigurePositionInTiles.getxPos();
+            int mainFigRow = mainFigurePositionInTiles.getyPos();
+            int zombieCol = zombieFigurePositionInTiles.getxPos();
+            int zombieRow = zombieFigurePositionInTiles.getyPos();
+            if (zombieCol == mainFigCol) {
+                System.out.println("COL ==");
+                if (zombieRow < mainFigRow) {
+                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.DOWN)) {
+                        zombieFigure.setDirection(SpriteDirection.DOWN);
+                        zombieFigure.setPosition(
+                                new Position(zombieFigure.getPosition().getxPos(), zombieFigure.getPosition().getyPos() + 1));
+                        System.out.println("COL == GO DOWN");
+                        return true;
+                    }
+                }
+                if (zombieRow > mainFigRow) {
+                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.UP)) {
+                        zombieFigure.setDirection(SpriteDirection.UP);
+                        zombieFigure.setPosition(
+                                new Position(zombieFigure.getPosition().getxPos(), zombieFigure.getPosition().getyPos() - 1));
+                        System.out.println("COL == GO UP");
+                        return true;
+                    }
+                }
+            }
+            if (zombieRow == mainFigRow) {
+                System.out.println("ROW ==");
+                if (zombieCol < mainFigCol) {
+                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.RIGHT)) {
+                        zombieFigure.setDirection(SpriteDirection.RIGHT);
+                        zombieFigure.setPosition(
+                                new Position(zombieFigure.getPosition().getxPos() + 1, zombieFigure.getPosition().getyPos()));
+                        System.out.println("COL == GO RIGHT");
+                        return true;
+                    }
+                }
+                if (zombieCol > mainFigCol) {
+                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.LEFT)) {
+                        zombieFigure.setDirection(SpriteDirection.LEFT);
+                        zombieFigure.setPosition(
+                                new Position(zombieFigure.getPosition().getxPos() - 1, zombieFigure.getPosition().getyPos()));
+                        System.out.println("COL == GO LEFT");
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            zombieFigure.walk();
+        }
+        return true;
+    }
+
+    private static boolean getPerformZombieWalkForSmartWorked(ZombieFigure zombieFigure) {
+        return false;
+    }
 
 
     public static boolean getIsKeyForMainSpritePressedAndHandleDirection() {
@@ -277,7 +347,5 @@ public class GeneralGameLogic {
         return keyMovementPressed;
 
     }
-
-
 
 }

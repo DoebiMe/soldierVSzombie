@@ -9,7 +9,7 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
-public class MainFigure {
+public class MainFigure implements Figure {
 
     public final int MAX_STEPS = 7;
     private int currentStep = 0;
@@ -25,6 +25,7 @@ public class MainFigure {
     public final int WALK_SIZE = 4;     // must be a divider of DrawEngine.SCALE_FACTOR
 
     public MainFigure() {
+
         mainFigureSetup();
     }
 
@@ -36,14 +37,6 @@ public class MainFigure {
         currentStep = 0;
     }
 
-    public Position getPosition() {
-        return position;
-    }
-
-    public void setPosition(Position thePosition) {
-        position = thePosition;
-
-    }
 
     public int getXPosModuloScale() {
         return position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE;
@@ -60,7 +53,7 @@ public class MainFigure {
         }
     }
 
-    public void walk(boolean keyMovementPressed,boolean canWalkThatDirection) {
+    public void walk(boolean keyMovementPressed, boolean canWalkThatDirection) {
         int x = 0;
         int y = 0;
         switch (spriteDirection) {
@@ -93,14 +86,6 @@ public class MainFigure {
         return currentStep;
     }
 
-    public SpriteDirection getDirection() {
-        return spriteDirection;
-    }
-
-    public void setDirection(SpriteDirection newSpriteDirection) {
-        spriteDirection = newSpriteDirection;
-        //currentStep = 0;
-    }
 
     public Image getImageForCurrentStepAndDirection() {
         return switch (spriteDirection) {
@@ -166,6 +151,39 @@ public class MainFigure {
         int y = position.getyPos();
         x = x - (position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE);
         y = y - (position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE);
-        setPosition(new Position(x,y));
+        setPosition(new Position(x, y));
     }
+
+    @Override
+    public Position getPosition() {
+        return position;
+    }
+
+    @Override
+    public Position getPositionInTiles() {
+        return DrawEngine.getPixelsTranslatedToTiles(position);
+    }
+
+    @Override
+    public Position getPositionInPixels() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(Position thePosition) {
+        position = thePosition;
+
+    }
+
+    @Override
+    public SpriteDirection getDirection() {
+        return spriteDirection;
+    }
+
+    @Override
+    public void setDirection(SpriteDirection newSpriteDirection) {
+        spriteDirection = newSpriteDirection;
+        //currentStep = 0;
+    }
+
 }

@@ -15,7 +15,7 @@ import setups.IQ;
 
 import java.util.Random;
 
-public class ZombieFigure {
+public class ZombieFigure implements Figure {
 
     public final int MAX_STEPS = 4;
     private int currentStep = 0;
@@ -68,13 +68,6 @@ public class ZombieFigure {
         this.iq = iq;
     }
 
-    public Position getPosition() {
-        return position;
-    }
-
-    public void setPosition(Position position) {
-        this.position = position;
-    }
 
     public SpriteDirection getSpriteDirection() {
         return spriteDirection;
@@ -133,7 +126,7 @@ public class ZombieFigure {
     }
 
 
-    public void setNextDirection(Position positionScaledToTiles) {
+    public void setNextDirection() {
         SpriteDirection newDirection = spriteDirection;
         double random = Math.random();
         if (random < 0.5001) {
@@ -198,7 +191,33 @@ public class ZombieFigure {
         setPosition(new Position(x, y));
     }
 
+    @Override
+    public Position getPosition() {
+        return position;
+    }
+
+    @Override
+    public Position getPositionInTiles() {
+        return DrawEngine.getPixelsTranslatedToTiles(position);
+    }
+
+    @Override
+    public Position getPositionInPixels() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(Position position) {
+        this.position = position;
+    }
+
+    @Override
     public SpriteDirection getDirection() {
         return spriteDirection;
+    }
+
+    @Override
+    public void setDirection(SpriteDirection spriteDirection) {
+        this.spriteDirection = spriteDirection;
     }
 }
