@@ -10,6 +10,7 @@ import setups.IQ;
 import setups.KeyboardSetup;
 import setups.TilesSetup;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -221,13 +222,15 @@ public class GeneralGameLogic {
                 case normal -> {
                     if (!getPerformZombieWalkForNormalWorked(zombieFigure)) {
                         performZombieWalkForStupid(zombieFigure);
-                    };
+                    }
+                    ;
                 }
                 case smart -> {
                     if (!getPerformZombieWalkForSmartWorked(zombieFigure)) {
                         if (!getPerformZombieWalkForNormalWorked(zombieFigure)) {
                             performZombieWalkForStupid(zombieFigure);
-                        };
+                        }
+                        ;
                     }
                 }
                 // todo implement rest of IQ
@@ -312,7 +315,44 @@ public class GeneralGameLogic {
     }
 
     private static boolean getPerformZombieWalkForSmartWorked(ZombieFigure zombieFigure) {
+        // idea :
+        // 1)   find if the mainSprite  is in a siderow of the zombifigure col , without obstacles , meaning clear walk
+        //      or
+        //      find if the mainSprite is in a sidecol of the zombiefigure row, without obstackles, meaning clear walk
+        //
+        // 2)   step A : ROW is the main axis
+        //      take all theTileId's from the zombiefigure columber until the mainfigure columber
+        //      (= TileIDs[zombieCol][zombieRow] until TileIDs[mainFigureCol][zombieRow],  mark, the ROW is zombieRow
+        //      take all TheTileId's from the zombiefigure colnumber until the mainfigure colnumber
+        //      (= TileIDs[mainFigureCol][zombieRow] until TileIDs[mainFigureCol][mainFigureRow], mark, the col is mainFigureCol
+        //      if all TileId's are walkable, go that direction
+        //      Step B : COL is the main axis
+        //      Simular to step A
         return false;
+    }
+
+    // there may only be 1 row or 1 col be selected, otherwise the methode will produce nonsense
+    private static boolean canWalkOnTheseTileIds(int col1, int row1, int col2, int row2) {
+        int colEnd = Math.max(col1, col2);
+        int colStart = Math.min(col1, col2);
+        int rowEnd = Math.max(row1, row2);
+        int rowStart = Math.min(row1, row2);
+        if (colStart == colEnd) {
+            for (int lus = rowStart; lus < rowEnd; lus++) {
+                if (!canWalkOnIdList.contains(tilesSetup.tileMapId[colStart][lus]))
+                return false;
+            }
+            return true;
+        }
+        if (rowStart == rowEnd) {
+            for (int lus = colStart; lus < colEnd; lus++) {
+                if (!canWalkOnIdList.contains(tilesSetup.tileMapId[lus][rowStart])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false; // meaning something is wrong, it's not a single row or a single col
     }
 
 
