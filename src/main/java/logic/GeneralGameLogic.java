@@ -320,39 +320,55 @@ public class GeneralGameLogic {
         //      or
         //      find if the mainSprite is in a sidecol of the zombiefigure row, without obstackles, meaning clear walk
         //
-        // 2)   step A : ROW is the main axis
-        //      take all theTileId's from the zombiefigure columber until the mainfigure columber
-        //      (= TileIDs[zombieCol][zombieRow] until TileIDs[mainFigureCol][zombieRow],  mark, the ROW is zombieRow
-        //      take all TheTileId's from the zombiefigure colnumber until the mainfigure colnumber
-        //      (= TileIDs[mainFigureCol][zombieRow] until TileIDs[mainFigureCol][mainFigureRow], mark, the col is mainFigureCol
+        // 2)   step A : Horizontal approach, followed by vertical
+        //      take all theTileId's from the zombiefigure colnumber until the mainfigure colnumber
+        //      = TileIDs[zombieCol][zombieRow] until TileIDs[mainFigureCol][zombieRow],  mark, zombieRow is the constant
+        //      canWalkOnThisPartOfRow(
+        //            zombieFigure.getPostionInTiles.getY(), // = row zombieFigure
+        //            zombieFigure.getPostionInTiles.getX(),
+        //            mainFigure.getPostionInTiles.getX())
+        //
+        //      take all TheTileId's from the mainfigure rownumber until the zombiefigure rownumber
+        //      = TileIDs[mainFigureCol][mainfigureRow] until TileIDs[mainFigureCol][zombieFigureRow], mark, mainFigureCol is the constant
+        //      canWalkOnThisPartOfCol(
+        //            mainFigure.getPostionInTiles.getX(), // = col mainFigure
+        //            mainFigure.getPostionInTiles.getY(),
+        //            zombieFigure.getPostionInTiles.getY())
+
+
+
+
         //      if all TileId's are walkable, go that direction
-        //      Step B : COL is the main axis
-        //      Simular to step A
+        //
+        //      Step B : Vertical approach, followed by horizontal
+        //      take all theTileId's from the zombiefigure rownumber until the mainfigure rownumber
+        //      (= TileIDs[zombieCol][zombieRow] until TileIDs[zombieCol][mainFigureRow],  mark, zombiecol is the constant
+        //      take all TheTileId's from the zombiefigure colnumber until the mainfigure colnumber
+        //      (= TileIDs[zombieFigureCol][mainFogureRow] until TileIDs[mainFigureCol][mainFigureRow], mark, the col is mainFigureCol
+        //      if all TileId's are walkable, go that direction
+
         return false;
     }
 
-    // there may only be 1 row or 1 col be selected, otherwise the methode will produce nonsense
-    private static boolean canWalkOnTheseTileIds(int col1, int row1, int col2, int row2) {
+    private static boolean canWalkOnThisPartOfRow(int row,int col1, int col2) {
         int colEnd = Math.max(col1, col2);
         int colStart = Math.min(col1, col2);
-        int rowEnd = Math.max(row1, row2);
-        int rowStart = Math.min(row1, row2);
-        if (colStart == colEnd) {
-            for (int lus = rowStart; lus < rowEnd; lus++) {
-                if (!canWalkOnIdList.contains(tilesSetup.tileMapId[colStart][lus]))
-                return false;
-            }
-            return true;
-        }
-        if (rowStart == rowEnd) {
             for (int lus = colStart; lus < colEnd; lus++) {
-                if (!canWalkOnIdList.contains(tilesSetup.tileMapId[lus][rowStart])) {
+                if (!canWalkOnIdList.contains(tilesSetup.tileMapId[lus][row])) {
                     return false;
                 }
             }
-            return true;
+        return true; // meaning the path is clear to walk on
+    }
+    private static boolean canWalkOnThisPartOfCol(int col,int row1, int row2) {
+        int rowEnd = Math.max(row1, row2);
+        int rowStart = Math.min(row1,row2);
+        for (int lus = rowStart; lus < rowEnd; lus++) {
+            if (!canWalkOnIdList.contains(tilesSetup.tileMapId[col][lus])) {
+                return false;
+            }
         }
-        return false; // meaning something is wrong, it's not a single row or a single col
+        return true; // meaning the path is clear to walk on
     }
 
 
