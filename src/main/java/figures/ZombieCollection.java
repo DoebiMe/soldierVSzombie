@@ -43,7 +43,7 @@ public class ZombieCollection {
         }
 
  */
-        for (int count = 0; count < 50;count++) {
+        for (int count = 0; count < 1;count++) {
             ZombieFigure zombieFigure = new ZombieFigure();
             zombieFigure.setPosition(getRandomFreePosition());
             zombieFigure.setSpriteDirection(SpriteDirection.LEFT);

@@ -1,6 +1,7 @@
 package logic;
 
 import combinatedFields.Position;
+import combinatedFields.RangePair;
 import combinatedFields.SpriteDirection;
 import drawEngine.DrawEngine;
 import figures.MainFigure;
@@ -65,6 +66,12 @@ public class GeneralGameLogic {
             DrawEngine.drawAllTiles(tilesSetup, mainFigure, transporterMovement);
             DrawEngine.drawAllZombies(mainFigure, zombieCollection);
             DrawEngine.drawMainFigure(mainFigure);
+            /*
+            RangePair rangePairCol = getWalkableColRangePairFromPosition(mainFigure.getPositionInTiles());
+            System.out.println("Main col range start : " + rangePairCol.getMin()+" and end : "+ rangePairCol.getMax());
+            RangePair rangePairRow = getWalkableRowRangePairFromPosition(mainFigure.getPositionInTiles());
+            System.out.println("Main row range start : " + rangePairRow.getMin()+" and end : "+ rangePairRow.getMax());
+             */
         }
     }
 
@@ -236,7 +243,6 @@ public class GeneralGameLogic {
     private static void handleSmartZombie(ZombieFigure zombieFigure) {
         setZombieOnTileAlignedWithDirection(zombieFigure);
         Position startPosition = zombieFigure.getPosition();
-        SpriteDirection startDirection = zombieFigure.getDirection();
 
         if (!zombieFigure.mayChangeDirection()) {
             zombieFigure.walk();
@@ -261,15 +267,16 @@ public class GeneralGameLogic {
     private static boolean isPathToMainFigureFree(ZombieFigure zombieFigure) {
         Position zombiePosInTiles = zombieFigure.getPositionInTiles();
         Position mainFigurePosInTiles = mainFigure.getPositionInTiles();
-        int minX = Math.min(zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos());
         int maxX = Math.max(zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos());
         int minY = Math.min(zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos());
         int maxY = Math.max(zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos());
+        int minX = Math.min(zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos());
 
+        // simple, zombie is in straight line (row of col) form mainfigure
         boolean noObstakel = findEasyPath(zombieFigure, zombiePosInTiles, mainFigurePosInTiles, minX, maxX, minY, maxY);
         if (noObstakel) return noObstakel;
 
-
+        // medium, zombie detects mainfigure behind 1 corner (row + col) or (col + row) , yes, there is a difference ;-)
         if (Math.random() < 0.1) { // make sure sometimes first col, sometimes first row, with favor for col
             if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner 1 : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
                 return true;
@@ -283,8 +290,60 @@ public class GeneralGameLogic {
                 return true;
         }
 
+        // hard
+        // 1) get rowrange on zombiePosition
+        // 2) for each (step 1) get colRange on forloop,zombiePositionCol (include start AND end in the for loop!)
+        // 3) for each (step 2) get colRange on forloop,forloop
+
+        //step 1
+        RangePair rangeFreeColsZombie =  getWalkableColRangePairFromPosition(zombiePosInTiles);
+        System.out.println("Step 1 Zombie col range start : " + rangeFreeColsZombie.getMin()+" and end : "+ rangeFreeColsZombie.getMax());
+        //step 2
+        for (int colsWhereZombieCanWalkOn = rangeFreeColsZombie.getMin();colsWhereZombieCanWalkOn<=rangeFreeColsZombie.getMax();colsWhereZombieCanWalkOn++) {
+            RangePair rangeFreeRows = getWalkableRowRangePairFromPosition(new Position(colsWhereZombieCanWalkOn,zombiePosInTiles.getyPos()));
+            System.out.println("Step 2 For col "+colsWhereZombieCanWalkOn+" range row start : "+ rangeFreeRows.getMin()+" and end : " + rangeFreeRows.getMax());
+            //step 3
+            for (int rows = rangeFreeRows.getMin();rows<=rangeFreeRows.getMax();rows++) {
+                RangePair rangeFreeCols = getWalkableColRangePairFromPosition(new Position(colsWhereZombieCanWalkOn,rows));
+                System.out.println("Step 3 For col "+colsWhereZombieCanWalkOn+" range row :"+colsWhereZombieCanWalkOn+" is the colRange start : "+ rangeFreeCols.getMin()+" and end : "+ rangeFreeCols.getMax());
+                for (int cols = rangeFreeCols.getMin();cols<=rangeFreeCols.getMax();cols++) {
+                    Position position = new Position(cols,rows);
+                    if (position.equals(mainFigurePosInTiles)) {
+                        System.out.println("Nailed it on " + position.getxPos()+":"+position.getyPos());
+                        // here we could stop
+                    }
+                }
+            }
+        }
+
+
+
         return noObstakel;
     }
+
+    private static RangePair getWalkableColRangePairFromPosition(Position positionInTiles) {
+        int posColMin = positionInTiles.getxPos();
+        int posColMax = positionInTiles.getxPos();
+        while (posColMin > 0 && canWalkOnIdList.contains(getTileIdOn(new Position(posColMin-1,positionInTiles.getyPos())))) {
+            posColMin--;
+        }
+        while (posColMax < TilesSetup.TILE_MAP_COLS-1 && canWalkOnIdList.contains(getTileIdOn(new Position(posColMax+1,positionInTiles.getyPos())))) {
+            posColMax++;
+        }
+        return new RangePair(posColMin,posColMax);
+    }
+    private static RangePair getWalkableRowRangePairFromPosition(Position positionInTiles) {
+        int posRowMin = positionInTiles.getyPos();
+        int posRowMax = positionInTiles.getyPos();
+        while (posRowMin > 0 && canWalkOnIdList.contains(getTileIdOn(new Position(positionInTiles.getxPos(), posRowMin-1)))) {
+            posRowMin--;
+        }
+        while (posRowMax < TilesSetup.TILE_MAP_ROWS-1 && canWalkOnIdList.contains(getTileIdOn(new Position(positionInTiles.getxPos(),posRowMax+1)))) {
+            posRowMax++;
+        }
+        return new RangePair(posRowMin,posRowMax);
+    }
+
 
     private static boolean findMediumPathBehindTheCornerPrefRow(ZombieFigure zombieFigure, boolean partOfRowFree, boolean partOfColFree, String s, int i, int i2, SpriteDirection right, SpriteDirection left) {
         if (partOfRowFree) {
