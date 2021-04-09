@@ -295,30 +295,90 @@ public class GeneralGameLogic {
         // 2) for each (step 1) get colRange on forloop,zombiePositionCol (include start AND end in the for loop!)
         // 3) for each (step 2) get colRange on forloop,forloop
 
+        if (findHardPathPrefCol(zombieFigure, zombiePosInTiles, mainFigurePosInTiles)) return true;
+        if (findHardPathPrefRow(zombieFigure, zombiePosInTiles, mainFigurePosInTiles)) return true;
+
+        return noObstakel;
+    }
+
+    private static boolean findHardPathPrefCol(ZombieFigure zombieFigure, Position zombiePosInTiles, Position mainFigurePosInTiles) {
+        RangePair rangeColsStep1 =  getWalkableColRangePairFromPosition(zombiePosInTiles);
+        for (int loopColsFromStep1 = rangeColsStep1.getMin();loopColsFromStep1<=rangeColsStep1.getMax();loopColsFromStep1++) {
+            RangePair rangeRowsStep2 = getWalkableRowRangePairFromPosition(new Position(loopColsFromStep1, zombiePosInTiles.getyPos()));
+            for (int loopRowsFromStep2 = rangeRowsStep2.getMin();loopRowsFromStep2<=rangeRowsStep2.getMax();loopRowsFromStep2++) {
+                RangePair rangeColsStep3 = getWalkableColRangePairFromPosition(new Position(loopColsFromStep1,loopRowsFromStep2));
+                Position testPositionStep2 = new Position(loopColsFromStep1,loopRowsFromStep2);
+                if (testPositionStep2.equals(mainFigurePosInTiles)) {
+                    System.out.println("During step 2 pref Col Nailed it on " + testPositionStep2.getxPos()+":"+testPositionStep2.getyPos());
+                    zombieFigure.setDirection(zombiePosInTiles.getxPos() < loopColsFromStep1
+                            ? SpriteDirection.RIGHT
+                            : SpriteDirection.LEFT);
+                    return true;
+                }
+                for (int loopColsFromStep3 = rangeColsStep3.getMin();loopColsFromStep3<=rangeColsStep3.getMax();loopColsFromStep3++) {
+                    Position testPositionStep3 = new Position(loopColsFromStep3,loopRowsFromStep2);
+                    if (testPositionStep3.equals(mainFigurePosInTiles)) {
+                        System.out.println("During step 3 pref Col Nailed it on " + testPositionStep3.getxPos()+":"+testPositionStep3.getyPos());
+                        zombieFigure.setDirection(zombiePosInTiles.getxPos() < loopColsFromStep1
+                                ? SpriteDirection.RIGHT
+                                : SpriteDirection.LEFT);
+                        return true;
+                    }
+/*
+                    // step 4
+                    RangePair rangeRowsStep4 = getWalkableRowRangePairFromPosition(testPositionStep3);
+                    for (int loopRowsFromStep4 = rangeRowsStep4.getMin();loopRowsFromStep4 <= rangeRowsStep4.getMax();loopRowsFromStep4++) {
+                        Position testPositionStep4 = new Position(loopColsFromStep3,loopRowsFromStep4);
+                        if (testPositionStep4.equals(mainFigurePosInTiles)) {
+                            System.out.println("During step 4 pref Col Nailed it on " + testPositionStep4.getxPos()+":"+testPositionStep4.getyPos());
+                            // here we could stop
+                            zombieFigure.setDirection(zombiePosInTiles.getxPos() < loopColsFromStep1
+                                    ? SpriteDirection.RIGHT
+                                    : SpriteDirection.LEFT);
+                            return true;
+                        }
+                    }
+*/
+                }
+
+            }
+        }
+        return false;
+    }
+    private static boolean findHardPathPrefRow(ZombieFigure zombieFigure, Position zombiePosInTiles, Position mainFigurePosInTiles) {
         //step 1
-        RangePair rangeFreeColsZombie =  getWalkableColRangePairFromPosition(zombiePosInTiles);
-        System.out.println("Step 1 Zombie col range start : " + rangeFreeColsZombie.getMin()+" and end : "+ rangeFreeColsZombie.getMax());
+        RangePair rangeRowsStep1 =  getWalkableRowRangePairFromPosition(zombiePosInTiles);
+        //System.out.println("Step 1 Zombie row range start : " + rangeFreeRowsZombie.getMin()+" and end : "+ rangeFreeRowsZombie.getMax());
         //step 2
-        for (int colsWhereZombieCanWalkOn = rangeFreeColsZombie.getMin();colsWhereZombieCanWalkOn<=rangeFreeColsZombie.getMax();colsWhereZombieCanWalkOn++) {
-            RangePair rangeFreeRows = getWalkableRowRangePairFromPosition(new Position(colsWhereZombieCanWalkOn,zombiePosInTiles.getyPos()));
-            System.out.println("Step 2 For col "+colsWhereZombieCanWalkOn+" range row start : "+ rangeFreeRows.getMin()+" and end : " + rangeFreeRows.getMax());
-            //step 3
-            for (int rows = rangeFreeRows.getMin();rows<=rangeFreeRows.getMax();rows++) {
-                RangePair rangeFreeCols = getWalkableColRangePairFromPosition(new Position(colsWhereZombieCanWalkOn,rows));
-                System.out.println("Step 3 For col "+colsWhereZombieCanWalkOn+" range row :"+colsWhereZombieCanWalkOn+" is the colRange start : "+ rangeFreeCols.getMin()+" and end : "+ rangeFreeCols.getMax());
-                for (int cols = rangeFreeCols.getMin();cols<=rangeFreeCols.getMax();cols++) {
-                    Position position = new Position(cols,rows);
-                    if (position.equals(mainFigurePosInTiles)) {
-                        System.out.println("Nailed it on " + position.getxPos()+":"+position.getyPos());
+        for (int loopRowsFromStep1 = rangeRowsStep1.getMin();loopRowsFromStep1<=rangeRowsStep1.getMax();loopRowsFromStep1++) {
+            RangePair rangeColsStep2 = getWalkableColRangePairFromPosition(new Position(zombiePosInTiles.getxPos(), loopRowsFromStep1));
+            for (int loopColsFromStep2 = rangeColsStep2.getMin();loopColsFromStep2<=rangeColsStep2.getMax();loopColsFromStep2++) {
+                Position testPositionStep2 = new Position(loopColsFromStep2,loopRowsFromStep1);
+                if (testPositionStep2.equals(mainFigurePosInTiles)) {
+                    System.out.println("During step 2 pref Row Nailed it on " + testPositionStep2.getxPos()+":"+testPositionStep2.getyPos());
+                    // here we could stop
+                    zombieFigure.setDirection(zombiePosInTiles.getyPos() < loopRowsFromStep1
+                            ? SpriteDirection.DOWN
+                            : SpriteDirection.UP);
+                    return true;
+                }
+
+                RangePair rangeRowsStep3 = getWalkableRowRangePairFromPosition(new Position(loopColsFromStep2, loopRowsFromStep1));
+                //System.out.println("Step 3 For row "+rowsWhereZombieCanWalkOn+" range col :"+rowsWhereZombieCanWalkOn+" is the rowRange start : "+ rangeFreeRows.getMin()+" and end : "+ rangeFreeRows.getMax());
+                for (int loopRowsFromStep3 = rangeRowsStep3.getMin();loopRowsFromStep3<=rangeRowsStep3.getMax();loopRowsFromStep3++) {
+                    Position testPositionStep3 = new Position(loopColsFromStep2,loopRowsFromStep3);
+                    if (testPositionStep3.equals(mainFigurePosInTiles)) {
+                        System.out.println("During step 3 pref Row Nailed it on " + testPositionStep3.getxPos()+":"+testPositionStep3.getyPos());
                         // here we could stop
+                        zombieFigure.setDirection(zombiePosInTiles.getyPos() < loopRowsFromStep1
+                                ? SpriteDirection.DOWN
+                                : SpriteDirection.UP);
+                        return true;
                     }
                 }
             }
         }
-
-
-
-        return noObstakel;
+        return false;
     }
 
     private static RangePair getWalkableColRangePairFromPosition(Position positionInTiles) {
