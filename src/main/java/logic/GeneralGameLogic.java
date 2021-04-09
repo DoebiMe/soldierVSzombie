@@ -10,7 +10,6 @@ import setups.IQ;
 import setups.KeyboardSetup;
 import setups.TilesSetup;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -160,8 +159,9 @@ public class GeneralGameLogic {
         return new Position(col, row);
     }
 
-    private static boolean canWalkThatDirection(Position positionInPixels, SpriteDirection direction) {
+    protected static boolean canWalkThatDirection(Position positionInPixels, SpriteDirection direction) {
         Position positionInTiles = DrawEngine.getPixelsTranslatedToTiles(positionInPixels);
+        // System.out.println("Test position");
         int tileId = getTileIdNextTo(positionInTiles, direction);
         return canWalkOnIdList.contains(tileId);
     }
@@ -216,161 +216,303 @@ public class GeneralGameLogic {
 
     private static void performZombiesWalking() {
         for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
-            zombieFigure.lineUpToTiles();
+            //zombieFigure.lineUpToTiles();
+            //setZombieOnTileAlignedWithDirection(zombieFigure);
             switch (zombieFigure.getIq()) {
-                case stupid -> performZombieWalkForStupid(zombieFigure);
+                case stupid -> {
+                }
                 case normal -> {
-                    if (!getPerformZombieWalkForNormalWorked(zombieFigure)) {
-                        performZombieWalkForStupid(zombieFigure);
-                    }
-                    ;
+
                 }
                 case smart -> {
-                    if (!getPerformZombieWalkForSmartWorked(zombieFigure)) {
-                        if (!getPerformZombieWalkForNormalWorked(zombieFigure)) {
-                            performZombieWalkForStupid(zombieFigure);
-                        }
-                        ;
-                    }
+                    handleSmartZombie(zombieFigure);
                 }
-                // todo implement rest of IQ
+                // todo implement rest of IQ : einstein
             }
 
         }
     }
 
-    private static void performZombieWalkForStupid(ZombieFigure zombieFigure) {
-        Position positionInPixels = zombieFigure.getPosition();
-        if (!zombieFigure.isInFreeze()) {
-            if ((positionInPixels.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE != 0) ||
-                    (positionInPixels.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE != 0) ||
-                    canWalkThatDirection(positionInPixels, zombieFigure.getSpriteDirection())) {
-                if (Math.random() > 0.001) {
-                    zombieFigure.walk();
-                } else {
-                    zombieFigure.setNextDirection();
-                }
-            } else {
-                zombieFigure.setNextDirection();
-            }
-        }
-    }
+    private static void handleSmartZombie(ZombieFigure zombieFigure) {
+        setZombieOnTileAlignedWithDirection(zombieFigure);
+        Position startPosition = zombieFigure.getPosition();
+        SpriteDirection startDirection = zombieFigure.getDirection();
 
-    private static boolean getPerformZombieWalkForNormalWorked(ZombieFigure zombieFigure) {
-        if ((zombieFigure.getPositionInPixels().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0) &&
-                (zombieFigure.getPositionInPixels().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0)) {
-            Position mainFigurePositionInTiles = mainFigure.getPositionInTiles();
-            Position zombieFigurePositionInTiles = zombieFigure.getPositionInTiles();
-            int mainFigCol = mainFigurePositionInTiles.getxPos();
-            int mainFigRow = mainFigurePositionInTiles.getyPos();
-            int zombieCol = zombieFigurePositionInTiles.getxPos();
-            int zombieRow = zombieFigurePositionInTiles.getyPos();
-            if (zombieCol == mainFigCol) {
-                System.out.println("COL ==");
-                if (zombieRow < mainFigRow) {
-                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.DOWN)) {
-                        zombieFigure.setDirection(SpriteDirection.DOWN);
-                        zombieFigure.setPosition(
-                                new Position(zombieFigure.getPosition().getxPos(), zombieFigure.getPosition().getyPos() + 1));
-                        System.out.println("COL == GO DOWN");
-                        return true;
-                    }
-                }
-                if (zombieRow > mainFigRow) {
-                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.UP)) {
-                        zombieFigure.setDirection(SpriteDirection.UP);
-                        zombieFigure.setPosition(
-                                new Position(zombieFigure.getPosition().getxPos(), zombieFigure.getPosition().getyPos() - 1));
-                        System.out.println("COL == GO UP");
-                        return true;
-                    }
-                }
-            }
-            if (zombieRow == mainFigRow) {
-                System.out.println("ROW ==");
-                if (zombieCol < mainFigCol) {
-                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.RIGHT)) {
-                        zombieFigure.setDirection(SpriteDirection.RIGHT);
-                        zombieFigure.setPosition(
-                                new Position(zombieFigure.getPosition().getxPos() + 1, zombieFigure.getPosition().getyPos()));
-                        System.out.println("COL == GO RIGHT");
-                        return true;
-                    }
-                }
-                if (zombieCol > mainFigCol) {
-                    if (canWalkThatDirection(zombieFigure.getPositionInPixels(), SpriteDirection.LEFT)) {
-                        zombieFigure.setDirection(SpriteDirection.LEFT);
-                        zombieFigure.setPosition(
-                                new Position(zombieFigure.getPosition().getxPos() - 1, zombieFigure.getPosition().getyPos()));
-                        System.out.println("COL == GO LEFT");
-                        return true;
-                    }
-                }
-            }
-            return false;
-        } else {
+        if (!zombieFigure.mayChangeDirection()) {
             zombieFigure.walk();
+            return;
+        }
+        // so we may change direction ;-)
+        if (isPathToMainFigureFree(zombieFigure)) {
+            // do something
+        }
+
+        if (canWalkThatDirection(startPosition, zombieFigure.getDirection())) {
+            zombieFigure.walk();
+        } else {
+            zombieFigure.setNextDirection();
+        }
+
+    }
+
+    static long obstacleCounter = 0;
+    static long cornerCounter = 0;
+
+    private static boolean isPathToMainFigureFree(ZombieFigure zombieFigure) {
+        Position zombiePosInTiles = zombieFigure.getPositionInTiles();
+        Position mainFigurePosInTiles = mainFigure.getPositionInTiles();
+        int minX = Math.min(zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos());
+        int maxX = Math.max(zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos());
+        int minY = Math.min(zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos());
+        int maxY = Math.max(zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos());
+
+        boolean noObstakel = findEasyPath(zombieFigure, zombiePosInTiles, mainFigurePosInTiles, minX, maxX, minY, maxY);
+        if (noObstakel) return noObstakel;
+
+
+        if (Math.random() < 0.1) { // make sure sometimes first col, sometimes first row, with favor for col
+            if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner 1 : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
+                return true;
+
+            if (findMediumPathBehindTheCornerPrefRow(zombieFigure, isPartOfRowFree(zombiePosInTiles.getyPos(), minX, maxX), isPartOfColFree(mainFigurePosInTiles.getxPos(), minY, maxY), "see you behind the corner 2 : ", zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos(), SpriteDirection.RIGHT, SpriteDirection.LEFT))
+                return true;
+        } else {
+            if (findMediumPathBehindTheCornerPrefRow(zombieFigure, isPartOfRowFree(zombiePosInTiles.getyPos(), minX, maxX), isPartOfColFree(mainFigurePosInTiles.getxPos(), minY, maxY), "see you behind the corner 2 : ", zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos(), SpriteDirection.RIGHT, SpriteDirection.LEFT))
+                return true;
+            if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner 1 : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
+                return true;
+        }
+
+        return noObstakel;
+    }
+
+    private static boolean findMediumPathBehindTheCornerPrefRow(ZombieFigure zombieFigure, boolean partOfRowFree, boolean partOfColFree, String s, int i, int i2, SpriteDirection right, SpriteDirection left) {
+        if (partOfRowFree) {
+            if (partOfColFree) {
+                System.out.println(s + cornerCounter++);
+                zombieFigure.setDirection(i < i2 //
+                        ? right
+                        : left);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean findMediumPathBehindTheCornerPrefCol(ZombieFigure zombieFigure, boolean partOfColFree, boolean partOfRowFree, String s, int i, int i2, SpriteDirection down, SpriteDirection up) {
+        if (partOfColFree) {
+            if (partOfRowFree) {
+                System.out.println(s + cornerCounter++);
+                zombieFigure.setDirection(i < i2 //
+                        ? down
+                        : up);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isPartOfRowFree(int row, int colMin, int colMax) {
+        for (int lusX = colMin; lusX < colMax; lusX++) {
+            if (!canWalkOnIdList.contains(getTileIdOn(new Position(lusX, row)))) {
+                return false;
+            }
         }
         return true;
     }
 
-    private static boolean getPerformZombieWalkForSmartWorked(ZombieFigure zombieFigure) {
-        // idea :
-        // 1)   find if the mainSprite  is in a siderow of the zombifigure col , without obstacles , meaning clear walk
-        //      or
-        //      find if the mainSprite is in a sidecol of the zombiefigure row, without obstackles, meaning clear walk
-        //
-        // 2)   step A : Horizontal approach, followed by vertical
-        //      take all theTileId's from the zombiefigure colnumber until the mainfigure colnumber
-        //      = TileIDs[zombieCol][zombieRow] until TileIDs[mainFigureCol][zombieRow],  mark, zombieRow is the constant
-        //      canWalkOnThisPartOfRow(
-        //            zombieFigure.getPostionInTiles.getY(), // = row zombieFigure
-        //            zombieFigure.getPostionInTiles.getX(),
-        //            mainFigure.getPostionInTiles.getX())
-        //
-        //      take all TheTileId's from the mainfigure rownumber until the zombiefigure rownumber
-        //      = TileIDs[mainFigureCol][mainfigureRow] until TileIDs[mainFigureCol][zombieFigureRow], mark, mainFigureCol is the constant
-        //      canWalkOnThisPartOfCol(
-        //            mainFigure.getPostionInTiles.getX(), // = col mainFigure
-        //            mainFigure.getPostionInTiles.getY(),
-        //            zombieFigure.getPostionInTiles.getY())
+    private static boolean isPartOfColFree(int col, int rowMin, int rowMax) {
 
+        for (int lusY = rowMin; lusY < rowMax; lusY++) {
+            if (!canWalkOnIdList.contains(getTileIdOn(new Position(col, lusY)))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    private static boolean findEasyPath(ZombieFigure zombieFigure, Position zombiePosInTiles, Position mainFigurePosInTiles, int minX, int maxX, int minY, int maxY) {
+        boolean noObstakel = true;
+        if (minY == maxY) {
+            //System.out.println("Main X = "+ mainFigurePosInTiles.getxPos()+" Main Y = "+ mainFigurePosInTiles.getyPos()+" zombie x = " + zombiePosInTiles.getxPos()+" zombie y = " + zombiePosInTiles.getyPos());
+            for (int lusX = minX; lusX < maxX; lusX++) {
+                if (!canWalkOnIdList.contains(getTileIdOn(new Position(lusX, minY)))) {
+                    noObstakel=false;
+                    break;
+                }
+            }
+            if (noObstakel) {
+                obstacleCounter++;
+                System.out.println("No obstakel horizontal : " + obstacleCounter);
+                zombieFigure.setDirection(zombiePosInTiles.getxPos() < mainFigurePosInTiles.getxPos()
+                        ? SpriteDirection.RIGHT
+                        : SpriteDirection.LEFT);
+                return true;
+            }
 
-
-        //      if all TileId's are walkable, go that direction
-        //
-        //      Step B : Vertical approach, followed by horizontal
-        //      take all theTileId's from the zombiefigure rownumber until the mainfigure rownumber
-        //      (= TileIDs[zombieCol][zombieRow] until TileIDs[zombieCol][mainFigureRow],  mark, zombiecol is the constant
-        //      take all TheTileId's from the zombiefigure colnumber until the mainfigure colnumber
-        //      (= TileIDs[zombieFigureCol][mainFogureRow] until TileIDs[mainFigureCol][mainFigureRow], mark, the col is mainFigureCol
-        //      if all TileId's are walkable, go that direction
-
+        }
+        if (minX == maxX) {
+            for (int lusY = minY; lusY < maxY; lusY++) {
+                if (!canWalkOnIdList.contains(getTileIdOn(new Position(minX, lusY)))) {
+                    noObstakel=false;
+                    break;
+                }
+            }
+            if (noObstakel) {
+                obstacleCounter++;
+                System.out.println("No obstakel vertical : " + obstacleCounter);
+                zombieFigure.setDirection(zombiePosInTiles.getyPos() < mainFigurePosInTiles.getyPos()
+                        ? SpriteDirection.DOWN
+                        : SpriteDirection.UP);
+                return true;
+            }
+        }
         return false;
     }
 
-    private static boolean canWalkOnThisPartOfRow(int row,int col1, int col2) {
-        int colEnd = Math.max(col1, col2);
-        int colStart = Math.min(col1, col2);
-            for (int lus = colStart; lus < colEnd; lus++) {
-                if (!canWalkOnIdList.contains(tilesSetup.tileMapId[lus][row])) {
-                    return false;
+
+    private static void setZombieOnTileAlignedWithDirection(ZombieFigure zombieFigure) {
+        int xpos = zombieFigure.getPosition().getxPos();
+        int ypos = zombieFigure.getPosition().getyPos();
+
+        switch (zombieFigure.getDirection()) {
+            case UP, DOWN -> {
+                int mod = xpos % DrawEngine.SCALE_FACTOR_SPRITE;
+                if (mod != 0) {
+                    xpos -= mod;
+
                 }
             }
+            case LEFT, RIGHT -> {
+                int mod = ypos % DrawEngine.SCALE_FACTOR_SPRITE;
+                if (mod != 0) {
+                    ypos -= mod;
+
+                }
+            }
+        }
+        zombieFigure.setPosition(new Position(xpos, ypos));
+
+    }
+
+
+
+/*
+    private static boolean getPerformZombieWalkForSmartWorked(ZombieFigure zombieFigure) {
+        boolean result;
+        SpriteDirection spriteDirection;
+        int zombieNewXPos = zombieFigure.getPositionInPixels().getxPos();
+        int zombieNewYPos = zombieFigure.getPositionInPixels().getyPos();
+        int zombieXPosInTiles = zombieFigure.getPositionInTiles().getxPos();
+        int zombieYPosInTiles = zombieFigure.getPositionInTiles().getyPos();
+        int mainFigureXPosInTiles = mainFigure.getPositionInTiles().getxPos();
+        int mainFigureYPosInTiles = mainFigure.getPositionInTiles().getyPos();
+
+        if (zombieFigure.isPositionAllignedWithTiles() &&
+                (!isStandingOnTransporter(zombieFigure.getPositionInPixels()))) {
+            System.out.println("Beiing smart");
+            // step A : Horizontal approach, followed by vertical
+            //      take all theTileId's from the zombiefigure colnumber until the mainfigure colnumber
+            //      = TileIDs[zombieCol][zombieRow] until TileIDs[mainFigureCol][zombieRow],  mark, zombieRow is the constant
+            //      canWalkOnThisPartOfRow(
+            //            zombieFigure.getPostionInTiles.getY(), // = row zombieFigure
+            //            zombieFigure.getPostionInTiles.getX(),
+            //            mainFigure.getPostionInTiles.getX())
+            //
+            //      take all TheTileId's from the mainfigure rownumber until the zombiefigure rownumber
+            //      = TileIDs[mainFigureCol][mainfigureRow] until TileIDs[mainFigureCol][zombieFigureRow], mark, mainFigureCol is the constant
+            //      canWalkOnThisPartOfCol(
+            //            mainFigure.getPostionInTiles.getX(), // = col mainFigure
+            //            mainFigure.getPostionInTiles.getY(),
+            //            zombieFigure.getPostionInTiles.getY())
+            //      if all TileId's are walkable, go that direction (either left or right)
+
+            result = canWalkOnThisPartOfRow( //
+                    zombieYPosInTiles, zombieXPosInTiles, mainFigureXPosInTiles);
+            System.out.println(LocalTime.now().getSecond() + " Step A Can walk on this part of row " + zombieYPosInTiles + " xpos1=" + zombieXPosInTiles + " xpos2=" + mainFigureXPosInTiles + " result :" + result);
+            result &= canWalkOnThisPartOfCol(//
+                    mainFigureXPosInTiles, mainFigureYPosInTiles, zombieYPosInTiles);
+            System.out.println(LocalTime.now().getSecond() + " Step A Can walk on this part of col " + zombieXPosInTiles + " ypos1=" + zombieYPosInTiles + " xpos2=" + mainFigureYPosInTiles + " result :" + result);
+            if (result) {
+                System.out.println("Found Step A");
+
+                // BUG : COULD BE YPOS WHO NEEDS TO CHANGE IF THE mainFigure is on same row as zombieFigure
+
+                spriteDirection =
+                        zombieXPosInTiles < mainFigureXPosInTiles //
+                                ? SpriteDirection.RIGHT //
+                                : SpriteDirection.LEFT;
+                zombieFigure.setSpriteDirection(spriteDirection);
+                return true;
+            } else {
+                System.out.println("NOT found step A");
+            }
+
+            // Step B : Vertical approach, followed by horizontal
+            //      take all theTileId's from the zombiefigure rownumber until the mainfigure rownumber
+            //      (= TileIDs[zombieCol][zombieRow] until TileIDs[zombieCol][mainFigureRow],  mark, zombiecol is the constant
+            //      canWalkOnThisPartOfCol(
+            //            zombieFigure.getPositionInTiles.getX(), // = col zombieFigure
+            //            zombieFigure.getPositionInTiles.getY(),
+            //            mainFigure.getPositionInTiles.getY();
+            //
+            //      take all TheTileId's from the zombiefigure colnumber until the mainfigure colnumber
+            //      (= TileIDs[zombieFigureCol][mainFigureRow] until TileIDs[mainFigureCol][mainFigureRow], mark, mainFigureRow is the constant
+            //      canWalkOnThisPartOfRow(
+            //            mainFigure.getPositionInTiles.getY(), // = row mainFigure
+            //            zombieFigure.getPositionInTiles.getX(),
+            //            mainFigure.getPositionInTiles.getX();
+            //      if all TileId's are walkable, go that direction (either up or down)
+
+            //      if all TileId's are walkable, go that direction
+
+            result = canWalkOnThisPartOfCol(zombieXPosInTiles, zombieYPosInTiles, mainFigureYPosInTiles) //
+                    && //
+                    canWalkOnThisPartOfRow(mainFigureYPosInTiles, zombieXPosInTiles, mainFigureXPosInTiles);
+            if (result) {
+                System.out.println("Found step B");
+
+                // BUG : COULD BE XPOS WHO NEEDS TO CHANGE IF THE mainFigure is on same col as zombieFigure
+
+                spriteDirection = zombieYPosInTiles < mainFigureYPosInTiles //
+                        ? SpriteDirection.DOWN //
+                        : SpriteDirection.UP;
+                zombieFigure.setSpriteDirection(spriteDirection);
+                return true;
+            } else {
+                System.out.println("NOT FOUND STEP B");
+            }
+        }
+        return false;
+    }
+
+ */
+
+    private static boolean canWalkOnThisPartOfRow(int row, int col1, int col2) {
+        int colEnd = Math.max(col1, col2);
+        int colStart = Math.min(col1, col2);
+        //System.out.println("row = " + row + " colStart = " + colStart + " colEnd = " + colEnd);
+        for (int lus = colStart; lus < colEnd; lus++) {
+            if (!canWalkOnIdList.contains(tilesSetup.tileMapId[lus][row])) {
+                return false;
+            }
+        }
+        //System.out.println("ROW PART IS CLEAR");
         return true; // meaning the path is clear to walk on
     }
-    private static boolean canWalkOnThisPartOfCol(int col,int row1, int row2) {
+
+    private static boolean canWalkOnThisPartOfCol(int col, int row1, int row2) {
         int rowEnd = Math.max(row1, row2);
-        int rowStart = Math.min(row1,row2);
+        int rowStart = Math.min(row1, row2);
+        //System.out.println("col = " + col + " rowStart = " + rowStart + " rowEnd = " + rowEnd);
         for (int lus = rowStart; lus < rowEnd; lus++) {
             if (!canWalkOnIdList.contains(tilesSetup.tileMapId[col][lus])) {
                 return false;
             }
         }
+        //System.out.println("COL PART IS CLEAR");
         return true; // meaning the path is clear to walk on
     }
-
 
     public static boolean getIsKeyForMainSpritePressedAndHandleDirection() {
         boolean keyMovementPressed = false;

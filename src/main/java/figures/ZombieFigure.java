@@ -15,6 +15,8 @@ import setups.IQ;
 
 import java.util.Random;
 
+import static spriteFoundation.BackGround.getyPos;
+
 public class ZombieFigure implements Figure {
 
     public final int MAX_STEPS = 4;
@@ -171,6 +173,12 @@ public class ZombieFigure implements Figure {
         return positionToScale;
     }
 
+    public boolean mayChangeDirection() {
+        return  (((spriteDirection == SpriteDirection.LEFT || spriteDirection == SpriteDirection.RIGHT) && position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0)
+                ||
+                ((spriteDirection == SpriteDirection.DOWN || spriteDirection == SpriteDirection.UP) && position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0));
+    }
+
     public void walk() {
         int x = position.getxPos();
         int y = position.getyPos();
@@ -217,7 +225,20 @@ public class ZombieFigure implements Figure {
     }
 
     @Override
-    public void setDirection(SpriteDirection spriteDirection) {
-        this.spriteDirection = spriteDirection;
+    public void setDirection(SpriteDirection newDirection) {
+        this.spriteDirection = newDirection;
+        int x = position.getxPos();
+        int y = position.getyPos();
+        switch (spriteDirection) {
+            case LEFT, RIGHT -> x -=  (x % DrawEngine.SCALE_FACTOR_SPRITE);
+            case UP, DOWN -> y -=  (y % DrawEngine.SCALE_FACTOR_SPRITE);
+        }
+        position = new Position(x,y);
+    }
+    public boolean isPositionAllignedWithTiles() {
+        boolean result =  position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0 &&
+                position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0;
+        System.out.println(" isPositionAllignedWithTiles == " + result);
+        return result;
     }
 }

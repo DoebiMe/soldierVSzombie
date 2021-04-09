@@ -23,8 +23,8 @@ public class ZombieCollection {
     public  void zombieCollectionSetup() {
         zombieFigureList = new ArrayList<>();
 
-
-        for (int count = 0; count < 30;count++) {
+/*
+        for (int count = 0; count < 10;count++) {
             ZombieFigure zombieFigure = new ZombieFigure();
             zombieFigure.setPosition(getRandomFreePosition());
             zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
@@ -33,12 +33,22 @@ public class ZombieCollection {
             zombieFigureList.add(zombieFigure);
         }
 
-        for (int count = 0; count < 10;count++) {
+        for (int count = 0; count < 20;count++) {
             ZombieFigure zombieFigure = new ZombieFigure();
             zombieFigure.setPosition(getRandomFreePosition());
             zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
             zombieFigure.setNextDirection();
             zombieFigure.setIq(IQ.normal);
+            zombieFigureList.add(zombieFigure);
+        }
+
+ */
+        for (int count = 0; count < 50;count++) {
+            ZombieFigure zombieFigure = new ZombieFigure();
+            zombieFigure.setPosition(getRandomFreePosition());
+            zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
+            zombieFigure.setNextDirection();
+            zombieFigure.setIq(IQ.smart);
             zombieFigureList.add(zombieFigure);
         }
 
