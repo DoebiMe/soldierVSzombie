@@ -70,6 +70,15 @@ public class ZombieFigure implements Figure {
         this.iq = iq;
     }
 
+    public boolean isPositionInsideZombieFigure(Position positionInPixels) {
+        int testPosX = positionInPixels.getxPos();
+        int testPosY = positionInPixels.getyPos();
+        int xPos = position.getxPos();
+        int yPos = position.getyPos();
+        return (testPosX >= xPos) && (testPosX <= xPos + spriteWidth) && //
+                (testPosY >= yPos) && (testPosY <= yPos + spriteHeight);
+    }
+
 
     public SpriteDirection getSpriteDirection() {
         return spriteDirection;
@@ -165,7 +174,7 @@ public class ZombieFigure implements Figure {
     }
 
     public boolean mayChangeDirection() {
-        return  (((spriteDirection == SpriteDirection.LEFT || spriteDirection == SpriteDirection.RIGHT) && position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0)
+        return (((spriteDirection == SpriteDirection.LEFT || spriteDirection == SpriteDirection.RIGHT) && position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0)
                 ||
                 ((spriteDirection == SpriteDirection.DOWN || spriteDirection == SpriteDirection.UP) && position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0));
     }
@@ -221,13 +230,14 @@ public class ZombieFigure implements Figure {
         int x = position.getxPos();
         int y = position.getyPos();
         switch (spriteDirection) {
-            case LEFT, RIGHT -> x -=  (x % DrawEngine.SCALE_FACTOR_SPRITE);
-            case UP, DOWN -> y -=  (y % DrawEngine.SCALE_FACTOR_SPRITE);
+            case LEFT, RIGHT -> x -= (x % DrawEngine.SCALE_FACTOR_SPRITE);
+            case UP, DOWN -> y -= (y % DrawEngine.SCALE_FACTOR_SPRITE);
         }
-        position = new Position(x,y);
+        position = new Position(x, y);
     }
+
     public boolean isPositionAllignedWithTiles() {
-        boolean result =  position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0 &&
+        boolean result = position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0 &&
                 position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0;
         System.out.println(" isPositionAllignedWithTiles == " + result);
         return result;

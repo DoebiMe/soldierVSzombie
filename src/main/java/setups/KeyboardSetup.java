@@ -21,7 +21,6 @@ public class KeyboardSetup {
                         // only add once... prevent duplicates
                         if (!keyBuffer.contains(code))
                             keyBuffer.add(code);
-                        System.out.println(code);
                     }
                 });
 

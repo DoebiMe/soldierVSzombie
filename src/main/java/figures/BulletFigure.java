@@ -55,7 +55,7 @@ public class BulletFigure implements Figure {
 
                 for (int readY = 0; readY < spriteHeight; readY++) {
                     for (int readX = 0; readX < spriteWidth; readX++) {
-                        Color color = pixelReader.getColor(readX + (colStep * (spriteWidth + 0)), readY );
+                        Color color = pixelReader.getColor(readX + (colStep * (spriteWidth + 0)), readY);
                         pixelWriter.setColor(readX, readY, color);
                     }
                 }
@@ -75,6 +75,10 @@ public class BulletFigure implements Figure {
             positionToScale.setyPos(positionToScale.getyPos() + 1);
         }
         return positionToScale;
+    }
+
+    public Position getCenterPositionInPixels() {
+        return new Position(position.getxPos() + spriteWidth / 2, position.getyPos() + spriteHeight / 2);
     }
 
     @Override

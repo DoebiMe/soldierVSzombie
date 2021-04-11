@@ -65,25 +65,46 @@ public class GeneralGameLogic {
             performZombieFreezing();
             bulletCollection.handleAllBullets();
             eraseBulletsAgainstNonWalkable();
+            handleBulletsOnZombies();
             DrawEngine.drawAllTiles(tilesSetup, mainFigure, transporterMovement);
             DrawEngine.drawAllZombies(mainFigure, zombieCollection);
-            DrawEngine.drawAllBullets(mainFigure,bulletCollection);
+            DrawEngine.drawAllBullets(mainFigure, bulletCollection);
             DrawEngine.drawMainFigure(mainFigure);
         }
+    }
+
+    static int gotchas = 0;
+
+    public static int handleBulletsOnZombies() {
+        List<BulletFigure> bulletFigureListToErase = new ArrayList<>();
+        List<ZombieFigure> zombieFigureListToErase = new ArrayList<>();
+        int hits = 0;
+        for (BulletFigure bulletFigure : bulletCollection.bulletFigureList) {
+            for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
+                if (zombieFigure.isPositionInsideZombieFigure(bulletFigure.getCenterPositionInPixels())) {
+                    bulletFigureListToErase.add(bulletFigure);
+                    zombieFigureListToErase.add(zombieFigure);
+                    System.out.println("Gotcha " + gotchas++);
+                    hits++;
+                    break;
+                }
+            }
+        }
+        bulletCollection.bulletFigureList.removeAll(bulletFigureListToErase);
+        zombieCollection.zombieFigureList.removeAll(zombieFigureListToErase);
+        return hits;
     }
 
     public static void eraseBulletsAgainstNonWalkable() {
         List<BulletFigure> bulletFigureListToErase = new ArrayList<>();
         for (BulletFigure bulletFigure : bulletCollection.bulletFigureList) {
 
-            if (!canWalkOnIdList.contains(getTileIdOn( bulletFigure.getPositionInTiles()))) {
+            if (!canWalkOnIdList.contains(getTileIdOn(bulletFigure.getPositionInTiles()))) {
                 bulletFigureListToErase.add(bulletFigure);
             }
         }
         bulletCollection.bulletFigureList.removeAll(bulletFigureListToErase);
     }
-
-
 
 
     private static void performZombieFreezing() {
@@ -312,23 +333,23 @@ public class GeneralGameLogic {
     }
 
     private static boolean findHardPathPrefCol(ZombieFigure zombieFigure, Position zombiePosInTiles, Position mainFigurePosInTiles) {
-        RangePair rangeColsStep1 =  getWalkableColRangePairFromPosition(zombiePosInTiles);
-        for (int loopColsFromStep1 = rangeColsStep1.getMin();loopColsFromStep1<=rangeColsStep1.getMax();loopColsFromStep1++) {
+        RangePair rangeColsStep1 = getWalkableColRangePairFromPosition(zombiePosInTiles);
+        for (int loopColsFromStep1 = rangeColsStep1.getMin(); loopColsFromStep1 <= rangeColsStep1.getMax(); loopColsFromStep1++) {
             RangePair rangeRowsStep2 = getWalkableRowRangePairFromPosition(new Position(loopColsFromStep1, zombiePosInTiles.getyPos()));
-            for (int loopRowsFromStep2 = rangeRowsStep2.getMin();loopRowsFromStep2<=rangeRowsStep2.getMax();loopRowsFromStep2++) {
-                RangePair rangeColsStep3 = getWalkableColRangePairFromPosition(new Position(loopColsFromStep1,loopRowsFromStep2));
-                Position testPositionStep2 = new Position(loopColsFromStep1,loopRowsFromStep2);
+            for (int loopRowsFromStep2 = rangeRowsStep2.getMin(); loopRowsFromStep2 <= rangeRowsStep2.getMax(); loopRowsFromStep2++) {
+                RangePair rangeColsStep3 = getWalkableColRangePairFromPosition(new Position(loopColsFromStep1, loopRowsFromStep2));
+                Position testPositionStep2 = new Position(loopColsFromStep1, loopRowsFromStep2);
                 if (testPositionStep2.equals(mainFigurePosInTiles)) {
-                    System.out.println("During step 2 pref Col Nailed it on " + testPositionStep2.getxPos()+":"+testPositionStep2.getyPos());
+                    System.out.println("During step 2 pref Col Nailed it on " + testPositionStep2.getxPos() + ":" + testPositionStep2.getyPos());
                     zombieFigure.setDirection(zombiePosInTiles.getxPos() < loopColsFromStep1
                             ? SpriteDirection.RIGHT
                             : SpriteDirection.LEFT);
                     return true;
                 }
-                for (int loopColsFromStep3 = rangeColsStep3.getMin();loopColsFromStep3<=rangeColsStep3.getMax();loopColsFromStep3++) {
-                    Position testPositionStep3 = new Position(loopColsFromStep3,loopRowsFromStep2);
+                for (int loopColsFromStep3 = rangeColsStep3.getMin(); loopColsFromStep3 <= rangeColsStep3.getMax(); loopColsFromStep3++) {
+                    Position testPositionStep3 = new Position(loopColsFromStep3, loopRowsFromStep2);
                     if (testPositionStep3.equals(mainFigurePosInTiles)) {
-                        System.out.println("During step 3 pref Col Nailed it on " + testPositionStep3.getxPos()+":"+testPositionStep3.getyPos());
+                        System.out.println("During step 3 pref Col Nailed it on " + testPositionStep3.getxPos() + ":" + testPositionStep3.getyPos());
                         zombieFigure.setDirection(zombiePosInTiles.getxPos() < loopColsFromStep1
                                 ? SpriteDirection.RIGHT
                                 : SpriteDirection.LEFT);
@@ -355,17 +376,18 @@ public class GeneralGameLogic {
         }
         return false;
     }
+
     private static boolean findHardPathPrefRow(ZombieFigure zombieFigure, Position zombiePosInTiles, Position mainFigurePosInTiles) {
         //step 1
-        RangePair rangeRowsStep1 =  getWalkableRowRangePairFromPosition(zombiePosInTiles);
+        RangePair rangeRowsStep1 = getWalkableRowRangePairFromPosition(zombiePosInTiles);
         //System.out.println("Step 1 Zombie row range start : " + rangeFreeRowsZombie.getMin()+" and end : "+ rangeFreeRowsZombie.getMax());
         //step 2
-        for (int loopRowsFromStep1 = rangeRowsStep1.getMin();loopRowsFromStep1<=rangeRowsStep1.getMax();loopRowsFromStep1++) {
+        for (int loopRowsFromStep1 = rangeRowsStep1.getMin(); loopRowsFromStep1 <= rangeRowsStep1.getMax(); loopRowsFromStep1++) {
             RangePair rangeColsStep2 = getWalkableColRangePairFromPosition(new Position(zombiePosInTiles.getxPos(), loopRowsFromStep1));
-            for (int loopColsFromStep2 = rangeColsStep2.getMin();loopColsFromStep2<=rangeColsStep2.getMax();loopColsFromStep2++) {
-                Position testPositionStep2 = new Position(loopColsFromStep2,loopRowsFromStep1);
+            for (int loopColsFromStep2 = rangeColsStep2.getMin(); loopColsFromStep2 <= rangeColsStep2.getMax(); loopColsFromStep2++) {
+                Position testPositionStep2 = new Position(loopColsFromStep2, loopRowsFromStep1);
                 if (testPositionStep2.equals(mainFigurePosInTiles)) {
-                    System.out.println("During step 2 pref Row Nailed it on " + testPositionStep2.getxPos()+":"+testPositionStep2.getyPos());
+                    System.out.println("During step 2 pref Row Nailed it on " + testPositionStep2.getxPos() + ":" + testPositionStep2.getyPos());
                     // here we could stop
                     zombieFigure.setDirection(zombiePosInTiles.getyPos() < loopRowsFromStep1
                             ? SpriteDirection.DOWN
@@ -375,10 +397,10 @@ public class GeneralGameLogic {
 
                 RangePair rangeRowsStep3 = getWalkableRowRangePairFromPosition(new Position(loopColsFromStep2, loopRowsFromStep1));
                 //System.out.println("Step 3 For row "+rowsWhereZombieCanWalkOn+" range col :"+rowsWhereZombieCanWalkOn+" is the rowRange start : "+ rangeFreeRows.getMin()+" and end : "+ rangeFreeRows.getMax());
-                for (int loopRowsFromStep3 = rangeRowsStep3.getMin();loopRowsFromStep3<=rangeRowsStep3.getMax();loopRowsFromStep3++) {
-                    Position testPositionStep3 = new Position(loopColsFromStep2,loopRowsFromStep3);
+                for (int loopRowsFromStep3 = rangeRowsStep3.getMin(); loopRowsFromStep3 <= rangeRowsStep3.getMax(); loopRowsFromStep3++) {
+                    Position testPositionStep3 = new Position(loopColsFromStep2, loopRowsFromStep3);
                     if (testPositionStep3.equals(mainFigurePosInTiles)) {
-                        System.out.println("During step 3 pref Row Nailed it on " + testPositionStep3.getxPos()+":"+testPositionStep3.getyPos());
+                        System.out.println("During step 3 pref Row Nailed it on " + testPositionStep3.getxPos() + ":" + testPositionStep3.getyPos());
                         // here we could stop
                         zombieFigure.setDirection(zombiePosInTiles.getyPos() < loopRowsFromStep1
                                 ? SpriteDirection.DOWN
@@ -394,24 +416,25 @@ public class GeneralGameLogic {
     private static RangePair getWalkableColRangePairFromPosition(Position positionInTiles) {
         int posColMin = positionInTiles.getxPos();
         int posColMax = positionInTiles.getxPos();
-        while (posColMin > 0 && canWalkOnIdList.contains(getTileIdOn(new Position(posColMin-1,positionInTiles.getyPos())))) {
+        while (posColMin > 0 && canWalkOnIdList.contains(getTileIdOn(new Position(posColMin - 1, positionInTiles.getyPos())))) {
             posColMin--;
         }
-        while (posColMax < TilesSetup.TILE_MAP_COLS-1 && canWalkOnIdList.contains(getTileIdOn(new Position(posColMax+1,positionInTiles.getyPos())))) {
+        while (posColMax < TilesSetup.TILE_MAP_COLS - 1 && canWalkOnIdList.contains(getTileIdOn(new Position(posColMax + 1, positionInTiles.getyPos())))) {
             posColMax++;
         }
-        return new RangePair(posColMin,posColMax);
+        return new RangePair(posColMin, posColMax);
     }
+
     private static RangePair getWalkableRowRangePairFromPosition(Position positionInTiles) {
         int posRowMin = positionInTiles.getyPos();
         int posRowMax = positionInTiles.getyPos();
-        while (posRowMin > 0 && canWalkOnIdList.contains(getTileIdOn(new Position(positionInTiles.getxPos(), posRowMin-1)))) {
+        while (posRowMin > 0 && canWalkOnIdList.contains(getTileIdOn(new Position(positionInTiles.getxPos(), posRowMin - 1)))) {
             posRowMin--;
         }
-        while (posRowMax < TilesSetup.TILE_MAP_ROWS-1 && canWalkOnIdList.contains(getTileIdOn(new Position(positionInTiles.getxPos(),posRowMax+1)))) {
+        while (posRowMax < TilesSetup.TILE_MAP_ROWS - 1 && canWalkOnIdList.contains(getTileIdOn(new Position(positionInTiles.getxPos(), posRowMax + 1)))) {
             posRowMax++;
         }
-        return new RangePair(posRowMin,posRowMax);
+        return new RangePair(posRowMin, posRowMax);
     }
 
 
@@ -466,7 +489,7 @@ public class GeneralGameLogic {
             //System.out.println("Main X = "+ mainFigurePosInTiles.getxPos()+" Main Y = "+ mainFigurePosInTiles.getyPos()+" zombie x = " + zombiePosInTiles.getxPos()+" zombie y = " + zombiePosInTiles.getyPos());
             for (int lusX = minX; lusX < maxX; lusX++) {
                 if (!canWalkOnIdList.contains(getTileIdOn(new Position(lusX, minY)))) {
-                    noObstakel=false;
+                    noObstakel = false;
                     break;
                 }
             }
@@ -483,7 +506,7 @@ public class GeneralGameLogic {
         if (minX == maxX) {
             for (int lusY = minY; lusY < maxY; lusY++) {
                 if (!canWalkOnIdList.contains(getTileIdOn(new Position(minX, lusY)))) {
-                    noObstakel=false;
+                    noObstakel = false;
                     break;
                 }
             }
@@ -556,7 +579,7 @@ public class GeneralGameLogic {
             }
 
             counterSpace--;
-            if (counterSpace<=0) {
+            if (counterSpace <= 0) {
                 counterSpace = 10;
                 if (KeyboardSetup.keyBuffer.contains("SPACE") && !previosScanHadSpace) {
                     previosScanHadSpace = true;
@@ -566,10 +589,6 @@ public class GeneralGameLogic {
                     previosScanHadSpace = false;
                 }
             }
-
-
-
-
 
         }
         return keyMovementPressed;
