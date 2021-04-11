@@ -2,9 +2,7 @@ package drawEngine;
 
 
 import combinatedFields.Position;
-import figures.MainFigure;
-import figures.ZombieCollection;
-import figures.ZombieFigure;
+import figures.*;
 import imageFoundation.ImageFoundation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
@@ -111,18 +109,21 @@ public class DrawEngine {
                     SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE
             );
         }
-
     }
 
+    public static void drawAllBullets(MainFigure mainFigure, BulletCollection bulletCollection) {
+        int subX = getSubX(mainFigure);
+        int subY = getSubY(mainFigure);
+        for (BulletFigure bulletFigure : bulletCollection.bulletFigureList) {
+            Position position = bulletFigure.getPosition();
+            int x = GraphicSetup.getHalfWidth() + position.getxPos() - mainFigure.getPosition().getxPos() + subX;
+            int y = GraphicSetup.getHalfHeight() + position.getyPos() - mainFigure.getPosition().getyPos() + subY;
 
-    public static void drawZombieTarget(TilesSetup tilesSetup, long xOffset, long yOffset, long stepX, long stepY, Position positionToScale) {
-        int id = tilesSetup.tileMapId[0][10];
-        GraphicSetup.getGraphicsContext().drawImage(tilesSetup.slicedTiles[18 * 10 + 0],
-                (stepX + (positionToScale.getxPos() - xOffset) * SCALE_FACTOR_SPRITE),
-                (stepY + (positionToScale.getyPos() - yOffset) * SCALE_FACTOR_SPRITE),
-                SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE
-
-        );
+            GraphicSetup.getGraphicsContext().drawImage(bulletFigure.getImageForDirection(),
+                    x, y,
+                    SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE
+            );
+        }
     }
 
 

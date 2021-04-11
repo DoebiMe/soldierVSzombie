@@ -152,15 +152,6 @@ public class ZombieFigure implements Figure {
         spriteDirection = newDirection;
     }
 
-    public void lineUpToTiles() {
-        Position currentPosition = position;
-        switch (spriteDirection) {
-            case RIGHT, LEFT -> setPosition(new Position(currentPosition.getxPos(), currentPosition.getyPos() / DrawEngine.SCALE_FACTOR_SPRITE * DrawEngine.SCALE_FACTOR_SPRITE));
-            case DOWN, UP -> setPosition(new Position(currentPosition.getxPos() / DrawEngine.SCALE_FACTOR_SPRITE * DrawEngine.SCALE_FACTOR_SPRITE, currentPosition.getyPos()));
-
-        }
-    }
-
     public Position getPositionScaledToTiles() {
         Position positionToScale = new Position(position.getxPos() / DrawEngine.SCALE_FACTOR_SPRITE, position.getyPos() / DrawEngine.SCALE_FACTOR_SPRITE);
 

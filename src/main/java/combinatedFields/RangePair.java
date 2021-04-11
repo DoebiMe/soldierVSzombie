@@ -2,6 +2,7 @@ package combinatedFields;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class RangePair {
     private int value1;
@@ -38,5 +39,18 @@ public class RangePair {
         integerList.add(value1);
         integerList.add(value2);
         return integerList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RangePair rangePair = (RangePair) o;
+        return value1 == rangePair.value1 && value2 == rangePair.value2;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value1, value2);
     }
 }

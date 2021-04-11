@@ -18,11 +18,10 @@ public class KeyboardSetup {
                 new EventHandler<KeyEvent>() {
                     public void handle(KeyEvent e) {
                         String code = e.getCode().toString();
-
                         // only add once... prevent duplicates
                         if (!keyBuffer.contains(code))
                             keyBuffer.add(code);
-                        //System.out.println("key = *"+code+"*");
+                        System.out.println(code);
                     }
                 });
 
