@@ -5,13 +5,18 @@ import combinatedFields.RangePair;
 import combinatedFields.SpriteDirection;
 import drawEngine.DrawEngine;
 import figures.*;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import mainStartup.Main;
 import setups.IQ;
 import setups.KeyboardSetup;
 import setups.TilesSetup;
+import soundEngine.SoundEngine;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.ResourceBundle;
 
 public class GeneralGameLogic {
 
@@ -23,6 +28,8 @@ public class GeneralGameLogic {
     private static ZombieCollection zombieCollection;
     private static BulletCollection bulletCollection;
 
+
+
     public GeneralGameLogic() {
         generalGameLogicSetup();
     }
@@ -33,6 +40,8 @@ public class GeneralGameLogic {
         stateOfGame = StateOfGame.play;
         zombieCollection = new ZombieCollection(tilesSetup);
         bulletCollection = new BulletCollection(tilesSetup);
+        //  https://edencoding.com/playing-audio/
+
     }
 
     public static StateOfGame getStateOfGame() {
@@ -308,16 +317,16 @@ public class GeneralGameLogic {
         if (noObstakel) return noObstakel;
 
         // medium, zombie detects mainfigure behind 1 corner (row + col) or (col + row) , yes, there is a difference ;-)
-        if (Math.random() < 0.1) { // make sure sometimes first col, sometimes first row, with favor for col
-            if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner 1 : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
+        if (Math.random() == 0.1) { // make sure sometimes first col, sometimes first row, with favor for col
+            if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner 1a : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
                 return true;
 
-            if (findMediumPathBehindTheCornerPrefRow(zombieFigure, isPartOfRowFree(zombiePosInTiles.getyPos(), minX, maxX), isPartOfColFree(mainFigurePosInTiles.getxPos(), minY, maxY), "see you behind the corner 2 : ", zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos(), SpriteDirection.RIGHT, SpriteDirection.LEFT))
+            if (findMediumPathBehindTheCornerPrefRow(zombieFigure, isPartOfRowFree(zombiePosInTiles.getyPos(), minX, maxX), isPartOfColFree(mainFigurePosInTiles.getxPos(), minY, maxY), "see you behind the corner 2a : ", zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos(), SpriteDirection.RIGHT, SpriteDirection.LEFT))
                 return true;
         } else {
-            if (findMediumPathBehindTheCornerPrefRow(zombieFigure, isPartOfRowFree(zombiePosInTiles.getyPos(), minX, maxX), isPartOfColFree(mainFigurePosInTiles.getxPos(), minY, maxY), "see you behind the corner 2 : ", zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos(), SpriteDirection.RIGHT, SpriteDirection.LEFT))
+            if (findMediumPathBehindTheCornerPrefRow(zombieFigure, isPartOfRowFree(zombiePosInTiles.getyPos(), minX, maxX), isPartOfColFree(mainFigurePosInTiles.getxPos(), minY, maxY), "see you behind the corner 2b : ", zombiePosInTiles.getxPos(), mainFigurePosInTiles.getxPos(), SpriteDirection.RIGHT, SpriteDirection.LEFT))
                 return true;
-            if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner 1 : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
+            if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner a : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
                 return true;
         }
 
@@ -580,10 +589,11 @@ public class GeneralGameLogic {
 
             counterSpace--;
             if (counterSpace <= 0) {
-                counterSpace = 10;
+                counterSpace = 5;
                 if (KeyboardSetup.keyBuffer.contains("SPACE") && !previosScanHadSpace) {
                     previosScanHadSpace = true;
                     bulletCollection.addNewBullet(mainFigure);
+                    //SoundEngine.startShoot();
                     //keyMovementPressed = true;
                 } else {
                     previosScanHadSpace = false;

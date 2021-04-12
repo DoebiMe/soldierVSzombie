@@ -4,18 +4,34 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import logic.GeneralGameLogic;
 import logic.StartOfGame;
 import setups.BackgroundSetup;
 import setups.GraphicSetup;
 import setups.ImagesSetup;
 import setups.KeyboardSetup;
+import soundEngine.SoundEngine;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 
 public class Main extends Application {
 
     @Override
-    public void start(Stage theStage) {
+    public void start(Stage theStage) throws MalformedURLException {
+
+        //https://ytmp3.cc/youtube-to-mp3/
+        //https://www.youtube.com/watch?v=z7UjROeg_FY&ab_channel=BreadBoxCommodoreComputerMuseum
+
+        SoundEngine.setUp();
+        SoundEngine.startThemeSong();
+
+
         GraphicSetup.graphicSetup(theStage, 1500, 1000);
 
         GeneralGameLogic.generalGameLogicSetup();
@@ -25,6 +41,7 @@ public class Main extends Application {
         ImagesSetup.imagesSetup();
 
         theStage.show();
+
 
         final LongProperty lastUpdateTime = new SimpleLongProperty(0);
         AnimationTimer animationTimer = new AnimationTimer() {

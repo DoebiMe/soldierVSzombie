@@ -5,4 +5,5 @@ public enum IQ {
     normal,
     smart,
     einstein
+
 }
