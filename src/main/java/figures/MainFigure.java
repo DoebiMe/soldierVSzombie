@@ -9,19 +9,13 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
-public class MainFigure implements Figure {
+public class MainFigure extends BaseFigure {
 
     public final int MAX_STEPS = 7;
     private int currentStep = 0;
-    private SpriteDirection spriteDirection;
     public Image[][] slicedMainFigures;
     public int sheetSourceCols;
     public int sheetSourceRows;
-    private int spriteWidth;
-    private int spriteHeight;
-
-    private Position position;
-
     public final int WALK_SIZE = 4;     // must be a divider of DrawEngine.SCALE_FACTOR
 
     public MainFigure() {
@@ -30,20 +24,20 @@ public class MainFigure implements Figure {
     }
 
     public void mainFigureSetup() {
+
         loadAndSliceMainSpriteSheet("top down soldier.png");
-        position = new Position(DrawEngine.SCALE_FACTOR_SPRITE, DrawEngine.SCALE_FACTOR_SPRITE); // = TILE 1,1
-        //position = new Position(0,0);
-        spriteDirection = SpriteDirection.LEFT;
+        setPosition(new Position(DrawEngine.SCALE_FACTOR_SPRITE, DrawEngine.SCALE_FACTOR_SPRITE)); // = TILE 1,1
+        setDirection(SpriteDirection.LEFT);
         currentStep = 0;
     }
 
 
     public int getXPosModuloScale() {
-        return position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE;
+        return getPosition().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE;
     }
 
     public int getYPosModuloScale() {
-        return position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE;
+        return getPosition().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE;
     }
 
     public void setNextStep() {
@@ -56,7 +50,7 @@ public class MainFigure implements Figure {
     public void walk(boolean keyMovementPressed, boolean canWalkThatDirection) {
         int x = 0;
         int y = 0;
-        switch (spriteDirection) {
+        switch (getDirection()) {
             case UP -> {
                 if ((keyMovementPressed && canWalkThatDirection) || (getYPosModuloScale() != 0)) {
                     y = -WALK_SIZE;
@@ -78,17 +72,12 @@ public class MainFigure implements Figure {
                 }
             }
         }
-
-        position = new Position(getPosition().getxPos() + x, getPosition().getyPos() + y);
-    }
-
-    public int getCurrentStep() {
-        return currentStep;
+        setPosition( new Position(getPosition().getxPos() + x, getPosition().getyPos() + y));
     }
 
 
     public Image getImageForCurrentStepAndDirection() {
-        return switch (spriteDirection) {
+        return switch (getDirection()) {
             case DOWN -> slicedMainFigures[currentStep][0];
             case UP -> slicedMainFigures[currentStep][1];
             case LEFT -> slicedMainFigures[currentStep][2];
@@ -99,8 +88,8 @@ public class MainFigure implements Figure {
     private void loadAndSliceMainSpriteSheet(String spriteSheetSourceName) {
         sheetSourceCols = 7; // last 3 not used
         sheetSourceRows = 4;
-        spriteWidth = 150; // 1650 / 11
-        spriteHeight = 117; // 468 / 4
+        setSpriteWidth( 150); // 1650 / 11
+        setSpriteHeight(117); // 468 / 4
         //Image[] mainFiguresAsRow = new Image[sheetSourceCols * sheetSourceRows];
         slicedMainFigures = new Image[sheetSourceCols][sheetSourceRows];
         ImageObject imageObject = new ImageObject(0, spriteSheetSourceName);
@@ -110,80 +99,35 @@ public class MainFigure implements Figure {
             final int RIGHT_OFFSET = 50;
             Image sourceImage = imageObject.getImage();
             PixelReader pixelReader = sourceImage.getPixelReader();
-            PixelWriter pixelWriter = null;
+            PixelWriter pixelWriter;
             for (int rowDirection = 0; rowDirection < sheetSourceRows; rowDirection++) {
                 for (int colStep = 0; colStep < sheetSourceCols; colStep++) {
-                    WritableImage writableImage = new WritableImage(spriteWidth - LEFT_OFFSET - RIGHT_OFFSET, spriteHeight - TOP_OFFSET);
+                    WritableImage writableImage = new WritableImage(getSpriteWidth() - LEFT_OFFSET - RIGHT_OFFSET, getSpriteHeight() - TOP_OFFSET);
                     pixelWriter = writableImage.getPixelWriter();
 
-                    for (int readY = TOP_OFFSET; readY < spriteHeight; readY++) {
-                        for (int readX = LEFT_OFFSET; readX < spriteWidth - RIGHT_OFFSET; readX++) {
-                            Color color = pixelReader.getColor(readX + (colStep * (spriteWidth)), readY + (rowDirection * (spriteHeight)));
+                    for (int readY = TOP_OFFSET; readY < getSpriteHeight(); readY++) {
+                        for (int readX = LEFT_OFFSET; readX < getSpriteWidth() - RIGHT_OFFSET; readX++) {
+                            Color color = pixelReader.getColor(readX + (colStep * (getSpriteWidth())), readY + (rowDirection * (getSpriteHeight())));
                             pixelWriter.setColor(readX - LEFT_OFFSET, readY - TOP_OFFSET, color);
                         }
                     }
                     // the image is here, transfer writeable image to image
                     slicedMainFigures[colStep][rowDirection] = writableImage;
                 }
-
             }
         }
     }
 
-    public int getWidth() {
-        return spriteWidth;
-    }
-
-    public int getHeight() {
-        return spriteHeight;
-    }
-
-    public int getHalfWidth() {
-        return spriteWidth / 2;
-    }
-
-    public int getHalfHeight() {
-        return spriteHeight / 2;
-    }
-
-    public void allignToTiles() {
-        int x = position.getxPos();
-        int y = position.getyPos();
-        x = x - (position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE);
-        y = y - (position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE);
+    public void alignToTiles() {
+        int x = getPosition().getxPos();
+        int y = getPosition().getyPos();
+        x = x - (getPosition().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE);
+        y = y - (getPosition().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE);
         setPosition(new Position(x, y));
     }
 
     @Override
-    public Position getPosition() {
-        return position;
-    }
-
-    @Override
-    public Position getPositionInTiles() {
-        return DrawEngine.getPixelsTranslatedToTiles(position);
-    }
-
-    @Override
-    public Position getPositionInPixels() {
-        return position;
-    }
-
-    @Override
-    public void setPosition(Position thePosition) {
-        position = thePosition;
-
-    }
-
-    @Override
-    public SpriteDirection getDirection() {
-        return spriteDirection;
-    }
-
-    @Override
     public void setDirection(SpriteDirection newSpriteDirection) {
-        spriteDirection = newSpriteDirection;
-        //currentStep = 0;
+        setDirectionUnAltered(newSpriteDirection);
     }
-
 }

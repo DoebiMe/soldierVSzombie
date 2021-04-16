@@ -1,7 +1,6 @@
 package figures;
 
 import combinatedFields.Acceleration;
-import combinatedFields.Position;
 import combinatedFields.SpriteDirection;
 import imageFoundation.ImageObject;
 import javafx.scene.image.Image;
@@ -9,34 +8,46 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import logic.Gifts;
 
-public class BulletFigure  extends BaseFigure {
-    public Image[] slicedBulletFigures;
+public class GiftFigure extends BaseFigure {
+    public Image[] slicedGiftFigures;
     public int sheetSourceCols;
-    //public int spriteWidth;
-    //public int spriteHeight;
     public Acceleration acceleration;
+    public Gifts gifts;
 
-    public BulletFigure() {
-        loadAndSliceZombieSpriteSheet("bullets-96x24.png");
+    public GiftFigure() {
+        loadAndSliceGiftSpriteSheet("all-gifts.png");
         setDirection(SpriteDirection.RIGHT);
         acceleration = new Acceleration(50, 50);
     }
 
-    public Image getImageForDirection() {
-        return switch (getDirection()) {
-            case DOWN -> slicedBulletFigures[2];
-            case UP -> slicedBulletFigures[0];
-            case LEFT -> slicedBulletFigures[3];
-            default -> slicedBulletFigures[1];
+    public Image getImageForGifts() {
+        return switch (gifts) {
+            case ammo -> slicedGiftFigures[0];
+            case chest -> slicedGiftFigures[1];
+            case diamond -> slicedGiftFigures[2];
+            case gift -> slicedGiftFigures[3];
+            case grenade -> slicedGiftFigures[4];
+            case gun -> slicedGiftFigures[5];
+            case princess -> slicedGiftFigures[6];
+            case question -> slicedGiftFigures[7];
         };
     }
 
-    private void loadAndSliceZombieSpriteSheet(String spriteSheetSourceName) {
-        sheetSourceCols = 4;
-        setSpriteWidth(24); // 96 / 4
-        setSpriteHeight(24); //
-        slicedBulletFigures = new Image[sheetSourceCols];
+    public Gifts getGifts() {
+        return gifts;
+    }
+
+    public void setGifts(Gifts gifts) {
+        this.gifts = gifts;
+    }
+
+    private void loadAndSliceGiftSpriteSheet(String spriteSheetSourceName) {
+        sheetSourceCols = 8;
+        setSpriteWidth(64); // 96 / 4
+        setSpriteHeight(64); //
+        slicedGiftFigures = new Image[sheetSourceCols];
         ImageObject imageObject = new ImageObject(0, spriteSheetSourceName);
         if (imageObject.isLoadSuccess()) {
             Image sourceImage = imageObject.getImage();
@@ -54,14 +65,8 @@ public class BulletFigure  extends BaseFigure {
                     }
                 }
                 // the image is here, transfer writeable image to image
-                slicedBulletFigures[colStep] = writableImage;
+                slicedGiftFigures[colStep] = writableImage;
             }
         }
     }
-/*
-    public Position getCenterPositionInPixels() {
-        return new Position(getPosition().getxPos() + spriteWidth / 2, getPosition().getyPos() + spriteHeight / 2);
-    }
-*/
-
 }

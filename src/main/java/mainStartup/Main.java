@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import logic.GeneralGameLogic;
 import logic.StartOfGame;
+import scoreEngine.ScoreEngine;
 import setups.BackgroundSetup;
 import setups.GraphicSetup;
 import setups.ImagesSetup;
@@ -33,6 +34,7 @@ public class Main extends Application {
 
 
         GraphicSetup.graphicSetup(theStage, 1500, 1000);
+        ScoreEngine.setUp();
 
         GeneralGameLogic.generalGameLogicSetup();
 

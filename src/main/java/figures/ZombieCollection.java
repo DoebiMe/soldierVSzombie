@@ -23,30 +23,10 @@ public class ZombieCollection {
     public  void zombieCollectionSetup() {
         zombieFigureList = new ArrayList<>();
 
-/*
-        for (int count = 0; count < 10;count++) {
-            ZombieFigure zombieFigure = new ZombieFigure();
-            zombieFigure.setPosition(getRandomFreePosition());
-            zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
-            zombieFigure.setNextDirection();
-            zombieFigure.setIq(IQ.stupid);
-            zombieFigureList.add(zombieFigure);
-        }
-
-        for (int count = 0; count < 20;count++) {
-            ZombieFigure zombieFigure = new ZombieFigure();
-            zombieFigure.setPosition(getRandomFreePosition());
-            zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
-            zombieFigure.setNextDirection();
-            zombieFigure.setIq(IQ.normal);
-            zombieFigureList.add(zombieFigure);
-        }
-
- */
         for (int count = 0; count < 50;count++) {
             ZombieFigure zombieFigure = new ZombieFigure();
             zombieFigure.setPosition(getRandomFreePosition());
-            zombieFigure.setSpriteDirection(SpriteDirection.LEFT);
+            zombieFigure.setDirection(SpriteDirection.LEFT);
             zombieFigure.setNextDirection();
             zombieFigure.setIq(IQ.smart);
             zombieFigureList.add(zombieFigure);
@@ -66,21 +46,5 @@ public class ZombieCollection {
         return DrawEngine.getTilesTranslatedToPixels(new Position(col,row));
     }
 
-    public  List<Position> getAllZombiePositions() {
-        List<Position> positionArrayList = new ArrayList<>();
-        for (ZombieFigure zombieFigure : zombieFigureList) {
-            positionArrayList.add(zombieFigure.getPosition());
-        }
-        return positionArrayList;
-    }
 
-    public   boolean isCollision(Position positionScaledToTiles) {
-        for (ZombieFigure zombieFigure : zombieFigureList) {
-            Position positionToTest = zombieFigure.getPositionScaledToTiles();
-            if (positionToTest.equals(positionScaledToTiles)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

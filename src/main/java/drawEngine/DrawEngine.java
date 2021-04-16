@@ -3,39 +3,26 @@ package drawEngine;
 
 import combinatedFields.Position;
 import figures.*;
-import imageFoundation.ImageFoundation;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.Rotate;
-import setups.BackgroundSetup;
+import scoreEngine.ScoreEngine;
 import setups.GraphicSetup;
 import setups.TilesSetup;
-import spriteFoundation.BackGround;
-import spriteFoundation.Sprite;
-import spriteFoundation.SpriteCollection;
 
 
 public class DrawEngine {
 
     public static final int SCALE_FACTOR_SPRITE = 60;
 
+    public static final int absoluteXOffset = 0;
+    public static final int absoluteYOffset = 100;
 
-    public static void drawBackground() {
-        GraphicSetup.getGraphicsContext().drawImage(BackGround.getImage(0), BackgroundSetup.getxPos(), BackgroundSetup.getYpos());
-
-    }
 
     public static int getSubX(MainFigure mainFigure) {
         int subX = 0;
-        int togglePoint = GraphicSetup.getWidth();
-        if (mainFigure.getPosition().getxPos() < /*togglePoint */700) {
-            subX = mainFigure.getPosition().getxPos() - /*togglePoint*/ 700;
-            return subX;
+        if (mainFigure.getPosition().getxPos() < 700) {
+            subX = mainFigure.getPosition().getxPos() - 700;
         }
-        return subX;
+        return subX + absoluteXOffset;
     }
 
     public static int getSubY(MainFigure mainFigure) {
@@ -44,7 +31,7 @@ public class DrawEngine {
         if (mainFigure.getPosition().getyPos() < 400) {
             subY = mainFigure.getPosition().getyPos() - 400;
         }
-        return subY;
+        return subY + absoluteYOffset;
     }
 
 
@@ -73,6 +60,7 @@ public class DrawEngine {
         for (int row = 0; row < TilesSetup.TILE_MAP_ROWS; row++) {
             int startY = (GraphicSetup.getHalfHeight() + (row * SCALE_FACTOR_SPRITE) - mainFigure.getPosition().getyPos());
             startY += subY;
+
             if ((startY < -SCALE_FACTOR_SPRITE) || //
                     (startY > GraphicSetup.getHeight())) {
                 continue;
@@ -111,6 +99,60 @@ public class DrawEngine {
         }
     }
 
+    public static void drawAllSkulls(MainFigure mainFigure, SkullCollection skullCollection) {
+        int subX = getSubX(mainFigure);
+        int subY = getSubY(mainFigure);
+        for (SkullFigure skullFigure : skullCollection.skullFigureList) {
+            Position position = skullFigure.getPosition();
+            int x = GraphicSetup.getHalfWidth() + position.getxPos() - mainFigure.getPosition().getxPos() + subX;
+            int y = GraphicSetup.getHalfHeight() + position.getyPos() - mainFigure.getPosition().getyPos() + subY;
+
+            GraphicSetup.getGraphicsContext().drawImage(skullFigure.getNextImage(),
+                    x, y,
+                    SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE
+            );
+        }
+    }
+    public static void drawAllGifts(MainFigure mainFigure, GiftCollection giftCollection) {
+        int subX = getSubX(mainFigure);
+        int subY = getSubY(mainFigure);
+        for (GiftFigure  giftFigure : giftCollection.giftFigureList) {
+            Position position = giftFigure.getPosition();
+            int x = GraphicSetup.getHalfWidth() + position.getxPos() - mainFigure.getPosition().getxPos() + subX;
+            int y = GraphicSetup.getHalfHeight() + position.getyPos() - mainFigure.getPosition().getyPos() + subY;
+
+            GraphicSetup.getGraphicsContext().drawImage(giftFigure.getImageForGifts(),
+                    x, y,
+                    SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE
+            );
+        }
+    }
+
+
+
+    public static void drawScoreBoard() {
+        GraphicSetup.getGraphicsContext().drawImage(ScoreEngine.getImgLives(), 10, 10, SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE);
+        GraphicSetup.getGraphicsContext().drawImage(ScoreEngine.getImgKills(), 200, 10, SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE);
+        GraphicSetup.getGraphicsContext().drawImage(ScoreEngine.getImgBullets(),400,10,SCALE_FACTOR_SPRITE,SCALE_FACTOR_SPRITE);
+
+        String killsAsString = Integer.toString(ScoreEngine.getKills());
+        for (int lus = 0; lus < killsAsString.length(); lus++) {
+            int number = Integer.valueOf(killsAsString.charAt(lus) - 48);
+            GraphicSetup.getGraphicsContext().drawImage(ScoreEngine.getImgNumber(number), 290 + 40 * lus, 10, SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE);
+        }
+        String livesAsString = Integer.toString(ScoreEngine.getLives());
+        for (int lus = 0; lus < livesAsString.length(); lus++) {
+            int number = Integer.valueOf(livesAsString.charAt(lus) - 48);
+            GraphicSetup.getGraphicsContext().drawImage(ScoreEngine.getImgNumber(number), 90 + 40 * lus, 10, SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE);
+        }
+        String remainingBulletsAsString = Integer.toString(ScoreEngine.getRemainingBullets());
+        for (int lus = 0; lus < remainingBulletsAsString.length(); lus++) {
+            int number = Integer.valueOf(remainingBulletsAsString.charAt(lus) - 48);
+            GraphicSetup.getGraphicsContext().drawImage(ScoreEngine.getImgNumber(number), 490 + 40 * lus, 10, SCALE_FACTOR_SPRITE, SCALE_FACTOR_SPRITE);
+        }
+
+    }
+
     public static void drawAllBullets(MainFigure mainFigure, BulletCollection bulletCollection) {
         int subX = getSubX(mainFigure);
         int subY = getSubY(mainFigure);
@@ -126,7 +168,7 @@ public class DrawEngine {
         }
     }
 
-
+/*
     public static void drawAllSprites() {
 
         for (Sprite sprite : SpriteCollection.getSpriteList()) {
@@ -140,6 +182,8 @@ public class DrawEngine {
             }
         }
     }
+ */
+    /*
 
     private static Image rotateImage(Image image, long rotation) {
         ImageView iv = new ImageView(image);
@@ -151,6 +195,8 @@ public class DrawEngine {
 
         return iv.snapshot(params, null);
     }
+
+     */
 
     public static Position getPixelsTranslatedToTiles(Position pixelPosition) {
         Position scaledPosition = new Position(

@@ -5,9 +5,7 @@ import combinatedFields.RangePair;
 import combinatedFields.SpriteDirection;
 import drawEngine.DrawEngine;
 import figures.*;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import mainStartup.Main;
+import scoreEngine.ScoreEngine;
 import setups.IQ;
 import setups.KeyboardSetup;
 import setups.TilesSetup;
@@ -16,7 +14,6 @@ import soundEngine.SoundEngine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.ResourceBundle;
 
 public class GeneralGameLogic {
 
@@ -27,7 +24,8 @@ public class GeneralGameLogic {
     private static TilesSetup tilesSetup;
     private static ZombieCollection zombieCollection;
     private static BulletCollection bulletCollection;
-
+    private static SkullCollection skullCollection;
+    private static GiftCollection giftCollection;
 
 
     public GeneralGameLogic() {
@@ -40,6 +38,9 @@ public class GeneralGameLogic {
         stateOfGame = StateOfGame.play;
         zombieCollection = new ZombieCollection(tilesSetup);
         bulletCollection = new BulletCollection(tilesSetup);
+        skullCollection = new SkullCollection(tilesSetup);
+        giftCollection = new GiftCollection(tilesSetup);
+
         //  https://edencoding.com/playing-audio/
 
     }
@@ -47,11 +48,11 @@ public class GeneralGameLogic {
     public static StateOfGame getStateOfGame() {
         return stateOfGame;
     }
-
     public static void setStateOfGame(StateOfGame theStateOfGame) {
         stateOfGame = theStateOfGame;
     }
-
+    private static SpriteDirection oldMainDirection = SpriteDirection.LEFT;
+    private static int holdWalk = 10;
 
     public static void executeLogicTimeLine() {
         ProcessKeys.processPressedKeysGeneral();
@@ -59,7 +60,16 @@ public class GeneralGameLogic {
 
         if (stateOfGame == StateOfGame.play) {
             mainFigure.setNextStep();
-            mainFigure.walk(keyMovementPressed, canWalkThatDirection(mainFigure.getPosition(), mainFigure.getDirection()));
+
+            if (oldMainDirection.equals(mainFigure.getDirection()) ) {
+                if (holdWalk-- <= 0) {
+                    mainFigure.walk(keyMovementPressed, canWalkThatDirection(mainFigure.getPosition(), mainFigure.getDirection()));
+                    holdWalk = 0;
+                }
+            } else {
+                holdWalk = 2; //for 2 scans no walking(so the sprite does'nt walk if user only wants to change direction)
+            }
+            oldMainDirection  = mainFigure.getDirection();
 
             boolean transporterMovement = isStandingOnTransporter(mainFigure.getPosition());
             if (transporterMovement) {
@@ -67,22 +77,41 @@ public class GeneralGameLogic {
                         mainFigure.getPositionInTiles(), mainFigure.getDirection());
                 Position newPositionInPixels = DrawEngine.getTilesTranslatedToPixels(newPositionInTiles);
                 mainFigure.setPosition(newPositionInPixels);
-                mainFigure.allignToTiles();
+                mainFigure.alignToTiles();
             }
             performZombiesWalking();
             performZombiesWalkingOnTransporter();
             performZombieFreezing();
             bulletCollection.handleAllBullets();
             eraseBulletsAgainstNonWalkable();
-            handleBulletsOnZombies();
+            skullCollection.handleAllSkulls(mainFigure.getPosition());
+            ScoreEngine.addToKills(handleBulletsOnZombies());
+            performCollisionCheck();
             DrawEngine.drawAllTiles(tilesSetup, mainFigure, transporterMovement);
+            DrawEngine.drawAllGifts(mainFigure, giftCollection);
             DrawEngine.drawAllZombies(mainFigure, zombieCollection);
             DrawEngine.drawAllBullets(mainFigure, bulletCollection);
+            DrawEngine.drawAllSkulls(mainFigure, skullCollection);
             DrawEngine.drawMainFigure(mainFigure);
+            DrawEngine.drawScoreBoard();
         }
     }
 
-    static int gotchas = 0;
+    private static int hit = 0;
+
+    public static void performCollisionCheck() {
+        for (SkullFigure skullFigure : skullCollection.skullFigureList) {
+            if (skullFigure.isInCoalition(mainFigure)) {
+                System.out.println("Hit by skull " + hit++);
+            }
+        }
+        for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
+            if (zombieFigure.isInCoalition(mainFigure)) {
+                System.out.println("Hit by zombie " + hit++);
+            }
+        }
+
+    }
 
     public static int handleBulletsOnZombies() {
         List<BulletFigure> bulletFigureListToErase = new ArrayList<>();
@@ -93,7 +122,6 @@ public class GeneralGameLogic {
                 if (zombieFigure.isPositionInsideZombieFigure(bulletFigure.getCenterPositionInPixels())) {
                     bulletFigureListToErase.add(bulletFigure);
                     zombieFigureListToErase.add(zombieFigure);
-                    System.out.println("Gotcha " + gotchas++);
                     hits++;
                     break;
                 }
@@ -139,7 +167,7 @@ public class GeneralGameLogic {
                         zombieFigure.getPositionInTiles(), zombieFigure.getDirection());
                 Position newPositionInPixels = DrawEngine.getTilesTranslatedToPixels(newPositionInTiles);
                 zombieFigure.setPosition(newPositionInPixels);
-                zombieFigure.allignToTiles();
+                zombieFigure.alignToTiles();
             }
         }
     }
@@ -317,7 +345,7 @@ public class GeneralGameLogic {
         if (noObstakel) return noObstakel;
 
         // medium, zombie detects mainfigure behind 1 corner (row + col) or (col + row) , yes, there is a difference ;-)
-        if (Math.random() == 0.1) { // make sure sometimes first col, sometimes first row, with favor for col
+        if (Math.random() <= 0.2) { // make sure sometimes first col, sometimes first row, with favor for col
             if (findMediumPathBehindTheCornerPrefCol(zombieFigure, isPartOfColFree(zombiePosInTiles.getxPos(), minY, maxY), isPartOfRowFree(mainFigurePosInTiles.getyPos(), minX, maxX), "see you behind the corner 1a : ", zombiePosInTiles.getyPos(), mainFigurePosInTiles.getyPos(), SpriteDirection.DOWN, SpriteDirection.UP))
                 return true;
 
@@ -450,7 +478,7 @@ public class GeneralGameLogic {
     private static boolean findMediumPathBehindTheCornerPrefRow(ZombieFigure zombieFigure, boolean partOfRowFree, boolean partOfColFree, String s, int i, int i2, SpriteDirection right, SpriteDirection left) {
         if (partOfRowFree) {
             if (partOfColFree) {
-                System.out.println(s + cornerCounter++);
+                //System.out.println(s + cornerCounter++);
                 zombieFigure.setDirection(i < i2 //
                         ? right
                         : left);
@@ -463,7 +491,7 @@ public class GeneralGameLogic {
     private static boolean findMediumPathBehindTheCornerPrefCol(ZombieFigure zombieFigure, boolean partOfColFree, boolean partOfRowFree, String s, int i, int i2, SpriteDirection down, SpriteDirection up) {
         if (partOfColFree) {
             if (partOfRowFree) {
-                System.out.println(s + cornerCounter++);
+                //System.out.println(s + cornerCounter++);
                 zombieFigure.setDirection(i < i2 //
                         ? down
                         : up);
@@ -504,7 +532,7 @@ public class GeneralGameLogic {
             }
             if (noObstakel) {
                 obstacleCounter++;
-                System.out.println("No obstakel horizontal : " + obstacleCounter);
+                // System.out.println("No obstakel horizontal : " + obstacleCounter);
                 zombieFigure.setDirection(zombiePosInTiles.getxPos() < mainFigurePosInTiles.getxPos()
                         ? SpriteDirection.RIGHT
                         : SpriteDirection.LEFT);
@@ -521,7 +549,7 @@ public class GeneralGameLogic {
             }
             if (noObstakel) {
                 obstacleCounter++;
-                System.out.println("No obstakel vertical : " + obstacleCounter);
+                // System.out.println("No obstakel vertical : " + obstacleCounter);
                 zombieFigure.setDirection(zombiePosInTiles.getyPos() < mainFigurePosInTiles.getyPos()
                         ? SpriteDirection.DOWN
                         : SpriteDirection.UP);
@@ -556,7 +584,7 @@ public class GeneralGameLogic {
 
     }
 
-    private static boolean previosScanHadSpace = false;
+    private static boolean previousScanHadSpace = false;
     private static int counterSpace = 10;
 
     public static boolean getIsKeyForMainSpritePressedAndHandleDirection() {
@@ -564,6 +592,7 @@ public class GeneralGameLogic {
         if (getStateOfGame().equals(StateOfGame.play)) {
             if (KeyboardSetup.keyBuffer.contains("LEFT")) {
                 if (mainFigure.getPosition().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0) { // must complete Y
+
                     mainFigure.setDirection(SpriteDirection.LEFT);
                 }
                 keyMovementPressed = true;
@@ -589,16 +618,20 @@ public class GeneralGameLogic {
 
             counterSpace--;
             if (counterSpace <= 0) {
-                counterSpace = 5;
-                if (KeyboardSetup.keyBuffer.contains("SPACE") && !previosScanHadSpace) {
-                    previosScanHadSpace = true;
-                    bulletCollection.addNewBullet(mainFigure);
-                    //SoundEngine.startShoot();
-                    //keyMovementPressed = true;
-                } else {
-                    previosScanHadSpace = false;
+                if (ScoreEngine.getRemainingBullets() >0) {
+                    counterSpace = 5;
+                    if (KeyboardSetup.keyBuffer.contains("SPACE") && !previousScanHadSpace) {
+                        previousScanHadSpace = true;
+                        bulletCollection.addNewBullet(mainFigure);
+                        SoundEngine.startShoot();
+                        ScoreEngine.setRemainingBullets(ScoreEngine.getRemainingBullets()-1);
+                    } else {
+                        previousScanHadSpace = false;
+                    }
                 }
             }
+
+
 
         }
         return keyMovementPressed;

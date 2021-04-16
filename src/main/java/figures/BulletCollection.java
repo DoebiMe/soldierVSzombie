@@ -17,7 +17,7 @@ public class BulletCollection {
         bulletFigureList = new ArrayList<>();
     }
 
-    public void addNewBullet(Figure originForBullet) {
+    public void addNewBullet(BaseFigure originForBullet) {
         BulletFigure bulletFigure = new BulletFigure();
         bulletFigure.setPosition(originForBullet.getPosition());
         bulletFigure.setDirection(originForBullet.getDirection());

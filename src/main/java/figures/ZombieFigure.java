@@ -10,25 +10,21 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-import logic.GeneralGameLogic;
 import setups.IQ;
 
-import java.util.Random;
-
-import static spriteFoundation.BackGround.getyPos;
-
-public class ZombieFigure implements Figure {
+public class ZombieFigure extends BaseFigure {
 
     public final int MAX_STEPS = 4;
     private int currentStep = 0;
-    private SpriteDirection spriteDirection;
     public Image[][] slicedZombieFigures;
     public int sheetSourceCols;
     public int sheetSourceRows;
+    /*
     public int spriteWidth;
     public int spriteHeight;
+
+     */
     public Acceleration acceleration;
-    private Position position;
     private long timeDividerForNextImage;
     private int freezeCounter;
     private IQ iq;
@@ -36,7 +32,7 @@ public class ZombieFigure implements Figure {
 
     public ZombieFigure() {
         loadAndSliceZombieSpriteSheet("zombie.png");
-        spriteDirection = SpriteDirection.RIGHT;
+        setDirection(SpriteDirection.RIGHT);
         currentStep = 0;
         acceleration = new Acceleration(50, 50);
         timeDividerForNextImage = 0;
@@ -73,19 +69,10 @@ public class ZombieFigure implements Figure {
     public boolean isPositionInsideZombieFigure(Position positionInPixels) {
         int testPosX = positionInPixels.getxPos();
         int testPosY = positionInPixels.getyPos();
-        int xPos = position.getxPos();
-        int yPos = position.getyPos();
-        return (testPosX >= xPos) && (testPosX <= xPos + spriteWidth) && //
-                (testPosY >= yPos) && (testPosY <= yPos + spriteHeight);
-    }
-
-
-    public SpriteDirection getSpriteDirection() {
-        return spriteDirection;
-    }
-
-    public void setSpriteDirection(SpriteDirection spriteDirection) {
-        this.spriteDirection = spriteDirection;
+        int xPos = getPosition().getxPos();
+        int yPos = getPosition().getyPos();
+        return (testPosX >= xPos) && (testPosX <= xPos + getSpriteWidth()) && //
+                (testPosY >= yPos) && (testPosY <= yPos + getSpriteHeight());
     }
 
     public Image getNextImageForDirection() {
@@ -97,7 +84,7 @@ public class ZombieFigure implements Figure {
             }
             timeDividerForNextImage = 7;
         }
-        return switch (spriteDirection) {
+        return switch (getDirection()) {
             case DOWN -> slicedZombieFigures[currentStep][0];
             case UP -> slicedZombieFigures[currentStep][3];
             case LEFT -> slicedZombieFigures[currentStep][1];
@@ -109,8 +96,8 @@ public class ZombieFigure implements Figure {
     private void loadAndSliceZombieSpriteSheet(String spriteSheetSourceName) {
         sheetSourceCols = 4;
         sheetSourceRows = 4;
-        spriteWidth = 32; // 128 / 4
-        spriteHeight = 48; // 192 / 4
+        setSpriteWidth( 32); // 128 / 4
+        setSpriteHeight(48); // 192 / 4
         slicedZombieFigures = new Image[sheetSourceCols][sheetSourceRows];
         ImageObject imageObject = new ImageObject(0, spriteSheetSourceName);
         if (imageObject.isLoadSuccess()) {
@@ -119,12 +106,12 @@ public class ZombieFigure implements Figure {
             PixelWriter pixelWriter = null;
             for (int rowDirection = 0; rowDirection < sheetSourceRows; rowDirection++) {
                 for (int colStep = 0; colStep < sheetSourceCols; colStep++) {
-                    WritableImage writableImage = new WritableImage(spriteWidth, spriteHeight);
+                    WritableImage writableImage = new WritableImage(getSpriteWidth(),getSpriteHeight());
                     pixelWriter = writableImage.getPixelWriter();
 
-                    for (int readY = 0; readY < spriteHeight; readY++) {
-                        for (int readX = 0; readX < spriteWidth; readX++) {
-                            Color color = pixelReader.getColor(readX + (colStep * (spriteWidth + 0)), readY + (rowDirection * (spriteHeight + 0)));
+                    for (int readY = 0; readY < getSpriteHeight(); readY++) {
+                        for (int readX = 0; readX < getSpriteWidth(); readX++) {
+                            Color color = pixelReader.getColor(readX + (colStep * (getSpriteWidth())), readY + (rowDirection * (getSpriteHeight())));
                             pixelWriter.setColor(readX, readY, color);
                         }
                     }
@@ -138,11 +125,11 @@ public class ZombieFigure implements Figure {
 
 
     public void setNextDirection() {
-        SpriteDirection newDirection = spriteDirection;
+        SpriteDirection newDirection = getDirection();
         double random = Math.random();
         if (random < 0.5001) {
             //System.out.println("Random 1");
-            switch (spriteDirection) {
+            switch (getDirection()) {
                 case UP -> newDirection = SpriteDirection.RIGHT;
                 case RIGHT -> newDirection = SpriteDirection.DOWN;
                 case DOWN -> newDirection = SpriteDirection.LEFT;
@@ -150,7 +137,7 @@ public class ZombieFigure implements Figure {
             }
         } else {
             //System.out.println("Random 2");
-            switch (spriteDirection) {
+            switch (getDirection()) {
                 case UP -> newDirection = SpriteDirection.LEFT;
                 case RIGHT -> newDirection = SpriteDirection.UP;
                 case DOWN -> newDirection = SpriteDirection.RIGHT;
@@ -158,31 +145,19 @@ public class ZombieFigure implements Figure {
             }
         }
 
-        spriteDirection = newDirection;
-    }
-
-    public Position getPositionScaledToTiles() {
-        Position positionToScale = new Position(position.getxPos() / DrawEngine.SCALE_FACTOR_SPRITE, position.getyPos() / DrawEngine.SCALE_FACTOR_SPRITE);
-
-        if (spriteDirection == SpriteDirection.LEFT) {
-            positionToScale.setxPos(positionToScale.getxPos() + 1);
-        }
-        if (spriteDirection == SpriteDirection.UP) {
-            positionToScale.setyPos(positionToScale.getyPos() + 1);
-        }
-        return positionToScale;
+        setDirection(newDirection);
     }
 
     public boolean mayChangeDirection() {
-        return (((spriteDirection == SpriteDirection.LEFT || spriteDirection == SpriteDirection.RIGHT) && position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0)
+        return (((getDirection() == SpriteDirection.LEFT || getDirection() == SpriteDirection.RIGHT) && getPosition().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0)
                 ||
-                ((spriteDirection == SpriteDirection.DOWN || spriteDirection == SpriteDirection.UP) && position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0));
+                ((getDirection() == SpriteDirection.DOWN || getDirection()== SpriteDirection.UP) && getPosition().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0));
     }
 
     public void walk() {
-        int x = position.getxPos();
-        int y = position.getyPos();
-        switch (getSpriteDirection()) {
+        int x = getPosition().getxPos();
+        int y = getPosition().getyPos();
+        switch (getDirection()) {
             case LEFT -> x--;
             case RIGHT -> x++;
             case UP -> y--;
@@ -191,55 +166,11 @@ public class ZombieFigure implements Figure {
         setPosition(new Position(x, y));
     }
 
-    public void allignToTiles() {
-        int x = position.getxPos();
-        int y = position.getyPos();
-        x = x - (position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE);
-        y = y - (position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE);
+    public void alignToTiles() {
+        int x = getPosition().getxPos();
+        int y = getPosition().getyPos();
+        x = x - (getPosition().getxPos() % DrawEngine.SCALE_FACTOR_SPRITE);
+        y = y - (getPosition().getyPos() % DrawEngine.SCALE_FACTOR_SPRITE);
         setPosition(new Position(x, y));
-    }
-
-    @Override
-    public Position getPosition() {
-        return position;
-    }
-
-    @Override
-    public Position getPositionInTiles() {
-        return DrawEngine.getPixelsTranslatedToTiles(position);
-    }
-
-    @Override
-    public Position getPositionInPixels() {
-        return position;
-    }
-
-    @Override
-    public void setPosition(Position position) {
-        this.position = position;
-    }
-
-    @Override
-    public SpriteDirection getDirection() {
-        return spriteDirection;
-    }
-
-    @Override
-    public void setDirection(SpriteDirection newDirection) {
-        this.spriteDirection = newDirection;
-        int x = position.getxPos();
-        int y = position.getyPos();
-        switch (spriteDirection) {
-            case LEFT, RIGHT -> x -= (x % DrawEngine.SCALE_FACTOR_SPRITE);
-            case UP, DOWN -> y -= (y % DrawEngine.SCALE_FACTOR_SPRITE);
-        }
-        position = new Position(x, y);
-    }
-
-    public boolean isPositionAllignedWithTiles() {
-        boolean result = position.getyPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0 &&
-                position.getxPos() % DrawEngine.SCALE_FACTOR_SPRITE == 0;
-        System.out.println(" isPositionAllignedWithTiles == " + result);
-        return result;
     }
 }
