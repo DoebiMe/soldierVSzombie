@@ -108,7 +108,7 @@ public class GeneralGameLogic {
             if (giftFigure.isInCoalition(mainFigure)) {
                 System.out.println("Gift = " + giftFigure.getGifts().toString());
                 giftFiguresToProcess.add(giftFigure);
-                processGiftFigure(giftFigure);//
+                processGiftFigure(giftFigure);// //
             }
         }
         if (giftFiguresToProcess.size() > 0) {
