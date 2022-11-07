@@ -34,7 +34,6 @@ public class GiftCollection {
                 case 5 -> giftFigure.setGifts(Gifts.grenade);
                 case 6 -> giftFigure.setGifts(Gifts.princess);
                 case 7 -> giftFigure.setGifts(Gifts.question);
-
             }
 
             giftFigureList.add(giftFigure);

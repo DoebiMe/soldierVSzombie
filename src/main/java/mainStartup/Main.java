@@ -1,5 +1,6 @@
 package mainStartup;
 
+import Service.JsonTileReader;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.property.LongProperty;
@@ -10,6 +11,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import logic.GeneralGameLogic;
 import logic.StartOfGame;
+import org.json.JSONException;
 import scoreEngine.ScoreEngine;
 import setups.BackgroundSetup;
 import setups.GraphicSetup;
@@ -17,6 +19,7 @@ import setups.ImagesSetup;
 import setups.KeyboardSetup;
 import soundEngine.SoundEngine;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -24,7 +27,7 @@ import java.net.URL;
 public class Main extends Application {
 
     @Override
-    public void start(Stage theStage) throws MalformedURLException {
+    public void start(Stage theStage) throws IOException, JSONException {
 
         //https://ytmp3.cc/youtube-to-mp3/
         //https://www.youtube.com/watch?v=z7UjROeg_FY&ab_channel=BreadBoxCommodoreComputerMuseum
@@ -43,6 +46,8 @@ public class Main extends Application {
         ImagesSetup.imagesSetup();
 
         theStage.show();
+
+        JsonTileReader jsonTileReader= new  JsonTileReader();
 
 
         final LongProperty lastUpdateTime = new SimpleLongProperty(0);

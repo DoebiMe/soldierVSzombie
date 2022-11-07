@@ -48,9 +48,11 @@ public class GeneralGameLogic {
     public static StateOfGame getStateOfGame() {
         return stateOfGame;
     }
+
     public static void setStateOfGame(StateOfGame theStateOfGame) {
         stateOfGame = theStateOfGame;
     }
+
     private static SpriteDirection oldMainDirection = SpriteDirection.LEFT;
     private static int holdWalk = 10;
 
@@ -61,7 +63,7 @@ public class GeneralGameLogic {
         if (stateOfGame == StateOfGame.play) {
             mainFigure.setNextStep();
 
-            if (oldMainDirection.equals(mainFigure.getDirection()) ) {
+            if (oldMainDirection.equals(mainFigure.getDirection())) {
                 if (holdWalk-- <= 0) {
                     mainFigure.walk(keyMovementPressed, canWalkThatDirection(mainFigure.getPosition(), mainFigure.getDirection()));
                     holdWalk = 0;
@@ -69,7 +71,7 @@ public class GeneralGameLogic {
             } else {
                 holdWalk = 2; //for 2 scans no walking(so the sprite does'nt walk if user only wants to change direction)
             }
-            oldMainDirection  = mainFigure.getDirection();
+            oldMainDirection = mainFigure.getDirection();
 
             boolean transporterMovement = isStandingOnTransporter(mainFigure.getPosition());
             if (transporterMovement) {
@@ -86,7 +88,8 @@ public class GeneralGameLogic {
             eraseBulletsAgainstNonWalkable();
             skullCollection.handleAllSkulls(mainFigure.getPosition());
             ScoreEngine.addToKills(handleBulletsOnZombies());
-            performCollisionCheck();
+            performEnemyCollisionCheck();
+            performGiftsCollisionCheck();
             DrawEngine.drawAllTiles(tilesSetup, mainFigure, transporterMovement);
             DrawEngine.drawAllGifts(mainFigure, giftCollection);
             DrawEngine.drawAllZombies(mainFigure, zombieCollection);
@@ -99,18 +102,77 @@ public class GeneralGameLogic {
 
     private static int hit = 0;
 
-    public static void performCollisionCheck() {
+    public static void performGiftsCollisionCheck() {
+        List<GiftFigure> giftFiguresToProcess = new ArrayList<>();
+        for (GiftFigure giftFigure : giftCollection.giftFigureList) {
+            if (giftFigure.isInCoalition(mainFigure)) {
+                System.out.println("Gift = " + giftFigure.getGifts().toString());
+                giftFiguresToProcess.add(giftFigure);
+                processGiftFigure(giftFigure);
+            }
+        }
+        if (giftFiguresToProcess.size() > 0) {
+            giftCollection.giftFigureList.removeAll(giftFiguresToProcess);
+        }
+    }
+
+
+    public static void performEnemyCollisionCheck() {
+        List<SkullFigure> skullFiguresToProcess = new ArrayList<>();
+        List<ZombieFigure> zombieFiguresToProcess = new ArrayList<>();
         for (SkullFigure skullFigure : skullCollection.skullFigureList) {
             if (skullFigure.isInCoalition(mainFigure)) {
                 System.out.println("Hit by skull " + hit++);
+                // toDo process
             }
         }
         for (ZombieFigure zombieFigure : zombieCollection.zombieFigureList) {
             if (zombieFigure.isInCoalition(mainFigure)) {
                 System.out.println("Hit by zombie " + hit++);
+                // toDo process
             }
         }
+        if (skullFiguresToProcess.size() > 0) {
+            skullCollection.skullFigureList.removeAll(skullFiguresToProcess);
+        }
+        if (zombieFiguresToProcess.size() > 0) {
+            zombieCollection.zombieFigureList.removeAll(zombieFiguresToProcess);
+        }
+    }
 
+    public static void processGiftFigure(GiftFigure giftFigureToProcess) {
+        switch (giftFigureToProcess.getGifts()) {
+            case ammo -> {
+                ScoreEngine.setRemainingBullets(ScoreEngine.getRemainingBullets() + 100);
+            }
+            case gun -> {
+
+            }
+            case chest -> {
+            }
+            case diamond -> {
+
+
+            }
+            case grenade -> {
+
+
+
+            }
+            case princess -> {
+
+
+
+
+            }
+            case gift -> {
+
+
+
+
+
+            }
+        }
     }
 
     public static int handleBulletsOnZombies() {
@@ -618,20 +680,18 @@ public class GeneralGameLogic {
 
             counterSpace--;
             if (counterSpace <= 0) {
-                if (ScoreEngine.getRemainingBullets() >0) {
+                if (ScoreEngine.getRemainingBullets() > 0) {
                     counterSpace = 5;
                     if (KeyboardSetup.keyBuffer.contains("SPACE") && !previousScanHadSpace) {
                         previousScanHadSpace = true;
                         bulletCollection.addNewBullet(mainFigure);
                         SoundEngine.startShoot();
-                        ScoreEngine.setRemainingBullets(ScoreEngine.getRemainingBullets()-1);
+                        ScoreEngine.setRemainingBullets(ScoreEngine.getRemainingBullets() - 1);
                     } else {
                         previousScanHadSpace = false;
                     }
                 }
             }
-
-
 
         }
         return keyMovementPressed;
