@@ -122,7 +122,8 @@ public class GeneralGameLogic {
         List<ZombieFigure> zombieFiguresToProcess = new ArrayList<>();
         for (SkullFigure skullFigure : skullCollection.skullFigureList) {
             if (skullFigure.isInCoalition(mainFigure)) {
-                System.out.println("Hit by skull " + hit++);
+                System.out.println("Hit by skull " + hit++); //
+
                 // toDo process
             }
         }
